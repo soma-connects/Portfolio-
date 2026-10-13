@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paulji Peters · Full-stack engineer</title>
+  <meta name="description" content="Paulji Peters is a full-stack engineer from Nigeria building AI pipelines, fintech rails and on-chain automation, end to end." />
+  <meta name="theme-color" content="#08080a" />
+  <meta name="color-scheme" content="dark" />
+
+  <!-- Social share card (Open Graph + Twitter) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Paulji Peters · I turn noise into signal" />
+  <meta property="og:description" content="AI pipelines, fintech rails and on-chain automation, built end to end." />
+  <meta property="og:image" content="assets/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+  <!-- Fonts: Geist (UI), Geist Mono (labels), Instrument Serif (italic accents).
+       Self-hosted: no third-party request, and the hero font is preloaded. -->
+  <link rel="preload" href="assets/fonts/geist-latin.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="css/fonts.css" />
+
+  <!-- Runs before first paint: flags that JS is on, so CSS may hide things
+       it is about to animate in. Without JS, everything stays visible. -->
+  <script>document.documentElement.classList.add("js")</script>
+  <link rel="stylesheet" href="css/style.css" />
+  <script type="module" src="js/main.js"></script>
+
+  <!-- Structured data helps Google show you as a person, not just a page -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Paulji Peters",
+    "jobTitle": "Full-stack engineer",
+    "email": "mailto:pauljizy@gmail.com",
+    "address": { "@type": "PostalAddress", "addressCountry": "NG" },
+    "alumniOf": "Michael Okpara University of Agriculture, Umudike",
+    "sameAs": ["https://github.com/soma-connects"],
+    "knowsAbout": ["Laravel", "Next.js", "TypeScript", "Python", "Solana", "Generative AI", "Fintech"]
+  }
+  </script>
+</head>
+
+<body class="is-loading">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <!-- ===================== PRELOADER: "acquiring signal" ===================== -->
+  <div class="loader" aria-hidden="true">
+    <div class="loader__panel loader__panel--top"></div>
+    <div class="loader__panel loader__panel--bottom"></div>
+    <div class="loader__inner">
+      <span class="loader__label mono">Acquiring signal</span>
+      <canvas class="loader__wave"></canvas>
+      <span class="loader__count mono">000</span>
+    </div>
+  </div>
+
+  <!-- Custom cursor (desktop only; hidden on touch screens by CSS) -->
+  <div class="cursor" aria-hidden="true">
+    <div class="cursor__ring"><span class="cursor__label"></span></div>
+    <div class="cursor__dot"></div>
+  </div>
+
+  <div class="progress" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ================================ NAV ================================ -->
+  <header class="nav">
+    <a class="nav__brand" href="#top" data-cursor="Top" aria-label="Paulji Peters, back to top">
+      <span class="nav__mark">PP</span><span class="nav__slash">/</span><em>signal</em>
+    </a>
+    <nav class="nav__links" aria-label="Primary">
+      <a href="#work" data-nav="work">Work</a>
+      <a href="#archive" data-nav="archive">Archive</a>
+      <a href="#stack" data-nav="stack">Stack</a>
+      <a href="#journey" data-nav="journey">Journey</a>
+      <a href="#contact" data-nav="contact">Contact</a>
+    </nav>
+    <div class="nav__status mono"><span class="live-dot"></span><span>Available</span></div>
+    <button class="nav__menu mono" aria-expanded="false" aria-controls="menu">Menu</button>
+  </header>
+
+  <div class="menu" id="menu" aria-hidden="true">
+    <nav class="menu__links" aria-label="Mobile">
+      <a href="#work"><span class="mono">01</span>Work</a>
+      <a href="#archive"><span class="mono">02</span>Archive</a>
+      <a href="#stack"><span class="mono">03</span>Stack</a>
+      <a href="#journey"><span class="mono">04</span>Journey</a>
+      <a href="#contact"><span class="mono">05</span>Contact</a>
+    </nav>
+    <p class="menu__foot mono">pauljizy@gmail.com</p>
+  </div>
+
+  <main id="main">
+    <!-- ================================ HERO ================================ -->
+    <section class="hero" id="top">
+      <canvas class="hero__canvas" aria-hidden="true"></canvas>
+
+      <div class="hero__meta mono">
+        <span>Portfolio ©2026</span>
+        <span class="hide-sm">Full-stack · AI · Web3</span>
+        <span>Nigeria · <span data-clock>--:--:--</span> WAT</span>
+      </div>
+
+      <div class="hero__bottom">
+        <h1 class="hero__title">
+          <span class="sr-only">Paulji Peters, a full-stack engineer who turns noise into signal.</span>
+          <span aria-hidden="true" class="line"><span>Full-stack engineer</span></span>
+          <span aria-hidden="true" class="line"><span>turning <em>noise</em> into</span></span>
+          <span aria-hidden="true" class="line"><span><em>signal</em>.</span></span>
+        </h1>
+        <div class="hero__side">
+          <p class="hero__sub">AI pipelines, fintech rails and on-chain automation. Built end to end, from the Postgres schema to the last pixel.</p>
+          <a class="hero__scroll mono" href="#about" data-cursor="Scroll">
+            <span>Scroll</span><span class="hero__scroll-line"></span>
+          </a>
+        </div>
+      </div>
+      <p class="hero__hint mono" aria-hidden="true"><span class="hint-fine">Move your cursor: you are the noise</span><span class="hint-touch">Drag a finger: you are the noise</span></p>
+    </section>
+
+    <!-- =============================== ABOUT =============================== -->
+    <section class="about section" id="about">
+      <div class="label mono"><span>(01)</span><span>About</span></div>
+
+      <p class="manifesto" data-scrub>
+        I build software that <em>pays attention.</em> It hears the chat spike in a four-hour stream, sees a bank card held to a chest and turns it into centimetres, and counts every kobo so a loan never risks money it didn't earn. Laravel taught me structure. AI gave me leverage. Solana taught me that every byte pays rent.
+      </p>
+
+      <div class="about__grid">
+        <figure class="portrait reveal" data-cursor-off>
+          <canvas class="portrait__canvas" aria-hidden="true"></canvas>
+          <img class="portrait__img" src="assets/portrait.jpg" alt="Portrait of Paulji Peters" width="460" height="460" loading="lazy" />
+          <figcaption class="mono">Fig. 00: the engineer. Hover to bring into focus.</figcaption>
+        </figure>
+
+        <div class="about__text">
+          <p class="reveal">I'm <strong>Paulji Peters</strong>, a full-stack engineer from Nigeria with a computer engineering degree and a habit of founding things. I work across the whole stack: Postgres schemas, Laravel and FastAPI backends, Python GPU workers, Next.js frontends and Solana programs.</p>
+          <p class="reveal">I like problems where being wrong is expensive: money, measurements, other people's time. So I write the threat model, keep money in integers and build systems that refuse to answer when they aren't sure.</p>
+          <dl class="stats" data-render="stats"></dl>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true" data-render="marquee"></div>
+
+    <!-- ================================ WORK ================================ -->
+    <section class="work section" id="work">
+      <header class="section-title">
+        <div class="label mono"><span>(02)</span><span>Selected work</span></div>
+        <h2 class="split">Six systems, <em>explained in&nbsp;motion.</em></h2>
+        <p class="section-title__note mono">Each figure is a live diagram of how the project actually works, drawn in code. No screenshots.</p>
+      </header>
+      <div class="work__list" data-render="featured"></div>
+    </section>
+
+    <!-- =============================== ARCHIVE =============================== -->
+    <section class="archive section" id="archive">
+      <header class="section-title">
+        <div class="label mono"><span>(03)</span><span>Archive</span></div>
+        <h2 class="split">Every repository, <em>no&nbsp;filler.</em></h2>
+      </header>
+      <div class="filters" role="group" aria-label="Filter projects" data-render="filters"></div>
+      <ol class="archive__list" data-render="archive"></ol>
+      <p class="archive__foot mono" data-render="incubating"></p>
+      <div class="preview" aria-hidden="true">
+        <div class="preview__bar"><i></i><i></i><i></i><span class="preview__file"></span></div>
+        <code class="preview__code"></code>
+        <div class="preview__meta"></div>
+      </div>
+    </section>
+
+    <!-- ================================ STACK ================================ -->
+    <section class="stack section" id="stack">
+      <header class="section-title">
+        <div class="label mono"><span>(04)</span><span>Stack</span></div>
+        <h2 class="split">The stack, <em>by&nbsp;layer.</em></h2>
+        <p class="section-title__note mono">Every tool here is in a repo you can open. Hover a layer to see where it ships.</p>
+      </header>
+      <div class="layers" data-render="layers"></div>
+    </section>
+
+    <!-- =============================== JOURNEY =============================== -->
+    <section class="journey section" id="journey">
+      <header class="section-title">
+        <div class="label mono"><span>(05)</span><span>Journey</span></div>
+        <h2 class="split">From ultrasonic sensors to <em>on-chain&nbsp;bots.</em></h2>
+      </header>
+      <div class="timeline">
+        <div class="timeline__track" aria-hidden="true"><div class="timeline__fill"></div></div>
+        <ol class="timeline__list" data-render="journey"></ol>
+      </div>
+    </section>
+
+    <!-- =============================== CONTACT =============================== -->
+    <section class="contact section" id="contact">
+      <div class="label mono"><span>(06)</span><span>Contact</span></div>
+      <h2 class="contact__title split">Got a hard problem?<br /><em>Let's make it signal.</em></h2>
+      <div class="contact__row">
+        <a class="contact__email magnetic" href="mailto:pauljizy@gmail.com" data-cursor="Write">pauljizy@gmail.com</a>
+        <button class="contact__copy mono magnetic" type="button" data-copy="pauljizy@gmail.com" data-cursor="Copy">Copy email</button>
+      </div>
+      <ul class="contact__links mono">
+        <li><a href="https://github.com/soma-connects" target="_blank" rel="noopener" data-cursor="Open">GitHub ↗</a></li>
+        <li><a href="mailto:pauljizy@gmail.com" data-cursor="Write">Email ↗</a></li>
+        <li><span class="live-dot"></span> Open to remote roles &amp; contracts worldwide</li>
+      </ul>
+    </section>
+  </main>
+
+  <!-- ================================ FOOTER ================================ -->
+  <footer class="footer">
+    <div class="footer__name" aria-hidden="true"><span>Paulji</span><span>Peters</span></div>
+    <div class="footer__row mono">
+      <span>© 2026 Paulji Peters</span>
+      <span>Hand-built. 0 frameworks, 0 dependencies.</span>
+      <span><span data-clock>--:--:--</span> WAT</span>
+      <a href="#top" data-cursor="Up">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <div class="toast mono" role="status" aria-live="polite"></div>
+
+  <noscript>
+    <style>.loader{display:none}</style>
+    <p class="noscript">This portfolio draws its figures with JavaScript. The short version: Paulji Peters, full-stack engineer. Email pauljizy@gmail.com · github.com/soma-connects</p>
+  </noscript>
+</body>
+</html>

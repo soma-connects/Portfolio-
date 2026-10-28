@@ -1,0 +1,6 @@
+{
+  "name": "signal-portfolio",
+  "private": true,
+  "description": "Paulji Peters' portfolio. Static site plus one serverless function (api/ask.js). No dependencies.",
+  "type": "module"
+}

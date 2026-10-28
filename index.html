@@ -75,6 +75,7 @@
     </a>
     <nav class="nav__links" aria-label="Primary">
       <a href="#work" data-nav="work">Work</a>
+      <a href="#lab" data-nav="lab">Lab</a>
       <a href="#archive" data-nav="archive">Archive</a>
       <a href="#stack" data-nav="stack">Stack</a>
       <a href="#journey" data-nav="journey">Journey</a>
@@ -101,12 +102,13 @@
   <div class="menu" id="menu" aria-hidden="true">
     <nav class="menu__links" aria-label="Mobile">
       <a href="#work"><span class="mono">01</span>Work</a>
-      <a href="#archive"><span class="mono">02</span>Archive</a>
-      <a href="#stack"><span class="mono">03</span>Stack</a>
-      <a href="#journey"><span class="mono">04</span>Journey</a>
-      <a href="#contact"><span class="mono">05</span>Contact</a>
-      <a href="showcase.html"><span class="mono">06</span>Services &amp; Flyer ↗</a>
-      <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener"><span class="mono">07</span>Resume / CV ↓</a>
+      <a href="#lab"><span class="mono">02</span>Lab</a>
+      <a href="#archive"><span class="mono">03</span>Archive</a>
+      <a href="#stack"><span class="mono">04</span>Stack</a>
+      <a href="#journey"><span class="mono">05</span>Journey</a>
+      <a href="#contact"><span class="mono">06</span>Contact</a>
+      <a href="showcase.html"><span class="mono">07</span>Services &amp; Flyer ↗</a>
+      <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener"><span class="mono">08</span>Resume / CV ↓</a>
     </nav>
     <div class="menu__tools mono">
       <button class="nav__pill" type="button" data-cmd-open>⌘K Terminal</button>
@@ -165,6 +167,8 @@
           <dl class="stats" data-render="stats"></dl>
         </div>
       </div>
+
+      <div class="proof" data-render="proof" aria-label="Verified production metrics and bounties"></div>
     </section>
 
     <div class="marquee" aria-hidden="true" data-render="marquee"></div>
@@ -176,13 +180,27 @@
         <h2 class="split">Six systems, <em>explained in&nbsp;motion.</em></h2>
         <p class="section-title__note mono">Each figure is a live diagram of how the project actually works, drawn in code. No screenshots.</p>
       </header>
+      <div class="lens" data-render="lenses"></div>
       <div class="work__list" data-render="featured"></div>
+    </section>
+
+    <!-- ================================ LAB ================================ -->
+    <!-- Multi-system interactive sandboxes (js/lab.js): My Data Keep, EFitMi, N-Reclaim -->
+    <section class="lab section" id="lab">
+      <header class="section-title">
+        <div class="label mono"><span>(03)</span><span>Lab</span></div>
+        <h2 class="split">Don't trust me. <em>Break&nbsp;it.</em></h2>
+        <p class="section-title__note mono">Three production engines running live in your browser: My Data Keep's integer-kobo Safe Margin &amp; advisory-lock race, EFitMi's ISO-7810 card calibration &amp; cosine posture guard, and N-Reclaim's Solana SPL atomic batch sweeper.</p>
+      </header>
+      <div class="sim" data-lab="safe-margin" data-telemetry-node="LAB:SAFE_MARGIN">
+        <p class="sim__fallback">The live simulator needs JavaScript. In short: reserve = max(0, tier% × lifetime profit − active debt), every amount is stored as integer kobo, and concurrent borrows are serialised with <code>pg_advisory_xact_lock(user_id)</code>.</p>
+      </div>
     </section>
 
     <!-- =============================== ARCHIVE =============================== -->
     <section class="archive section" id="archive">
       <header class="section-title">
-        <div class="label mono"><span>(03)</span><span>Archive</span></div>
+        <div class="label mono"><span>(04)</span><span>Archive</span></div>
         <h2 class="split">Every repository, <em>no&nbsp;filler.</em></h2>
       </header>
       <div class="filters" role="group" aria-label="Filter projects" data-render="filters"></div>
@@ -198,7 +216,7 @@
     <!-- ================================ STACK ================================ -->
     <section class="stack section" id="stack">
       <header class="section-title">
-        <div class="label mono"><span>(04)</span><span>Stack</span></div>
+        <div class="label mono"><span>(05)</span><span>Stack</span></div>
         <h2 class="split">The stack, <em>by&nbsp;layer.</em></h2>
         <p class="section-title__note mono">Every tool here is in a repo you can open. Hover a layer to see where it ships.</p>
       </header>
@@ -208,7 +226,7 @@
     <!-- =============================== JOURNEY =============================== -->
     <section class="journey section" id="journey">
       <header class="section-title">
-        <div class="label mono"><span>(05)</span><span>Journey</span></div>
+        <div class="label mono"><span>(06)</span><span>Journey</span></div>
         <h2 class="split">From ultrasonic sensors to <em>on-chain&nbsp;bots.</em></h2>
       </header>
       <div class="timeline">
@@ -219,7 +237,7 @@
 
     <!-- =============================== CONTACT =============================== -->
     <section class="contact section" id="contact">
-      <div class="label mono"><span>(06)</span><span>Contact</span></div>
+      <div class="label mono"><span>(07)</span><span>Contact</span></div>
       <h2 class="contact__title split">Got a hard problem?<br /><em>Let's make it signal.</em></h2>
       <div class="contact__row">
         <a class="contact__email magnetic" href="mailto:pauljizy@gmail.com" data-cursor="Write">pauljizy@gmail.com</a>

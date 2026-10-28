@@ -16,6 +16,7 @@ import { initPortrait } from "./portrait.js";
 import { initMotion, toast } from "./motion.js";
 import { initSound } from "./sound.js";
 import { initSystem } from "./system.js";
+import { initLab } from "./lab.js";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -97,6 +98,7 @@ async function boot() {
 
   initSound({ onToast: toast });
   initSystem({ onTheme: refreshTheme, onToast: toast });
+  initLab({ reduced, onToast: toast });
 
   await loaderDone;
   document.body.classList.remove("is-loading");

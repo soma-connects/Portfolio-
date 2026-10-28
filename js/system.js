@@ -5,7 +5,7 @@
    3. Live Telemetry X-Ray HUD Overlay (`Shift+X`) (#3)
    ========================================================================== */
 
-import { profile, stats, featured, archive, archiveFilters, layers } from "./data.js";
+import { profile, stats, featured, archive, archiveFilters, layers, recruiterLenses } from "./data.js";
 import { playTick, playSweep, playPing, isSoundEnabled, setSoundEnabled } from "./sound.js";
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -127,6 +127,30 @@ function initXrayDrawer({ onToast }) {
         </div>
         <pre class="xray__pre"><code>${highlightCode(x.code)}</code></pre>
       </section>
+
+      ${
+        x.postmortem
+          ? `
+      <section class="xray__section xray__postmortem">
+        <div class="xray__pm-head">
+          <h4 class="xray__label mono"><span>(E)</span><span>Deep Engineering Post-Mortem</span></h4>
+          <span class="xray__tag mono">${esc(x.postmortem.readTime || "4 min read")}</span>
+        </div>
+        <h5 class="xray__pm-title">${esc(x.postmortem.title)}</h5>
+        <div class="xray__pm-list">
+          ${x.postmortem.sections
+            .map(
+              (sec) => `
+            <article class="xray__pm-item">
+              <h6 class="mono">${esc(sec.heading)}</h6>
+              <p>${esc(sec.body)}</p>
+            </article>`
+            )
+            .join("")}
+        </div>
+      </section>`
+          : ""
+      }
 
       <footer class="xray__foot">
         <button class="xray__switch mono" type="button" data-xray-tab="${esc(prev.id)}">← ${pad(
@@ -461,7 +485,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
         sub: "Kobo integer accounting, SQL views & advisory locks",
         badge: "ASK AI",
         keywords: "ask fintech money kobo paystack escrow credit sql",
-        query: "ask fintech money kobo",
+        query: "How does Paulji prevent double-spend and float drift in fintech?",
       },
       {
         group: "Signal Terminal Q&A (or type any question)",
@@ -469,7 +493,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
         sub: "Ncliper 94% heuristic pruning + EFitMi on-device MediaPipe",
         badge: "ASK AI",
         keywords: "ask ai gemini vision mediapipe ffmpeg python clip",
-        query: "ask ai pipelines vision",
+        query: "How do Paulji's AI and computer vision pipelines stay fast and cheap?",
       },
       {
         group: "Signal Terminal Q&A (or type any question)",
@@ -477,7 +501,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
         sub: "N-Reclaim atomic rent recovery & Solana Security Lab",
         badge: "ASK AI",
         keywords: "ask solana web3 rust security anchor blockchain",
-        query: "ask solana rust security",
+        query: "What is Paulji's experience with Solana, Rust and security?",
       },
       {
         group: "Signal Terminal Q&A (or type any question)",
@@ -485,7 +509,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
         sub: "Laravel 12, FastAPI, PostgreSQL, Argon2id auth & threat models",
         badge: "ASK AI",
         keywords: "ask laravel php backend postgres api",
-        query: "ask laravel backend",
+        query: "What Laravel and backend systems has Paulji shipped?",
       },
 
       // Live System Controls
@@ -537,6 +561,14 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
       },
 
       // Quick Actions, CV & Navigation
+      {
+        group: "Credentials & Navigation",
+        title: "Open the Lab: try to break the Safe Margin Rule",
+        sub: "Live simulator: integer kobo, SQL-view maths & advisory-lock race",
+        badge: "LAB",
+        keywords: "lab simulator break safe margin race lock fintech datakeep demo play",
+        run: () => jumpTo("#lab"),
+      },
       {
         group: "Credentials & Navigation",
         title: `Copy Email (${profile.email})`,
@@ -591,26 +623,24 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
     return base;
   }
 
-  function renderAnswer(qText) {
-    const ans = answerQuery(qText);
-    if (!ans) {
-      answerEl.hidden = true;
-      answerEl.innerHTML = "";
-      return;
-    }
+  /* Paints an answer card. `ans` = { title, body, actions } */
+  function paintAnswer(ans, { head = "SIGNAL // KEYWORD MODE", tag = "GROUNDED ON DATA.JS", state = "", hint = "" } = {}) {
     answerEl.hidden = false;
+    answerEl.classList.toggle("is-thinking", state === "thinking");
+    answerEl.classList.toggle("is-ungrounded", state === "ungrounded");
     answerEl.innerHTML = `
       <div class="cmd__ans-head mono">
-        <span>SIGNAL TELEMETRY // SYNTHESIS</span>
-        <span>GROUNDED ON DATA.JS</span>
+        <span>${esc(head)}</span>
+        <span>${esc(tag)}</span>
       </div>
       <h4 class="cmd__ans-title">${esc(ans.title)}</h4>
       <p class="cmd__ans-body">${esc(ans.body)}</p>
       <div class="cmd__ans-actions">
-        ${ans.actions
+        ${(ans.actions || [])
           .map((a, i) => `<button class="cmd__ans-btn mono" type="button" data-ans-idx="${i}">${esc(a.label)} ↗</button>`)
           .join("")}
       </div>
+      ${hint ? `<p class="cmd__ans-hint mono">${esc(hint)}</p>` : ""}
     `;
 
     $$("[data-ans-idx]", answerEl).forEach((btn) => {
@@ -622,6 +652,8 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
           xrayDrawer.open(act.xray);
         } else if (act.filter) {
           jumpTo("#archive", act.filter);
+        } else if (act.jump) {
+          jumpTo(act.jump);
         } else if (act.href) {
           close();
           window.open(act.href, "_blank", "noopener");
@@ -635,18 +667,90 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
     });
   }
 
+  /* Instant, offline keyword answer (shown while typing, and as the fallback) */
+  function renderAnswer(qText) {
+    const ans = answerQuery(qText);
+    if (!ans) {
+      answerEl.hidden = true;
+      answerEl.innerHTML = "";
+      return;
+    }
+    paintAnswer(ans, { hint: "↵ Enter: ask Signal AI (Gemini, grounded on this site's data)" });
+  }
+
+  /* Turns the model's cited source ids into buttons */
+  function actionsFor(sources) {
+    const acts = [];
+    for (const id of sources) {
+      const p = featured.find((f) => f.id === id);
+      if (p) acts.push({ label: `Inspect ${p.name} X-Ray`, xray: p.id });
+      else if (id === "profile") acts.push({ label: "Copy Email Address", copy: profile.email });
+      else if (id === "archive") acts.push({ label: "Open the Archive", jump: "#archive" });
+      else if (id === "stack") acts.push({ label: "See the Stack", jump: "#stack" });
+      else if (id === "journey") acts.push({ label: "See the Journey", jump: "#journey" });
+    }
+    if (sources.includes("datakeep")) acts.push({ label: "Break the Safe Margin live", jump: "#lab" });
+    return acts.slice(0, 4);
+  }
+
+  /* Real AI: POST /api/ask (api/ask.js on Vercel). Falls back to keyword mode
+     when the endpoint isn't there (local static server) or is unavailable. */
+  const aiCache = new Map();
+  let askSeq = 0;
+  async function askRemote(raw) {
+    const q = raw.replace(/^(\?|ask\s+|>\s*)/i, "").trim();
+    if (!q) return;
+    const seq = ++askSeq;
+    const key = q.toLowerCase();
+
+    const show = (r) => {
+      if (seq !== askSeq) return; // a newer question superseded this one
+      paintAnswer(
+        { title: r.title, body: r.answer, actions: r.grounded ? actionsFor(r.sources || []) : [{ label: "Copy Email Address", copy: profile.email }] },
+        r.grounded
+          ? { head: "SIGNAL AI // GEMINI", tag: `CITES: ${(r.sources || []).join(" · ").toUpperCase() || "DATA.JS"}` }
+          : { head: "SIGNAL AI // NOT IN MY DATA", tag: "REFUSED TO GUESS", state: "ungrounded" }
+      );
+      playPing(true);
+    };
+
+    if (aiCache.has(key)) return show(aiCache.get(key));
+
+    paintAnswer({ title: q, body: "Reading data.js and composing a grounded answer", actions: [] }, {
+      head: "SIGNAL AI // THINKING",
+      tag: "GEMINI",
+      state: "thinking",
+    });
+    playTick(1040);
+
+    try {
+      const res = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q }),
+        signal: AbortSignal.timeout?.(20000),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = await res.json();
+      if (!data?.answer) throw new Error("empty");
+      aiCache.set(key, data);
+      show(data);
+    } catch (err) {
+      if (seq !== askSeq) return;
+      const offline = answerQuery(q);
+      const why = err?.message === "429" ? "RATE LIMITED, TRY AGAIN IN A MINUTE" : "AI OFFLINE, KEYWORD ANSWER";
+      if (offline) paintAnswer(offline, { head: "SIGNAL // KEYWORD MODE", tag: why });
+    }
+  }
+
+  const isQuestion = (q) => /^(\?|ask |how |what |why |does |do |is |can |who |where |when |which |tell |has |have |did |explain )/i.test(q);
+
   function renderList() {
     const raw = input.value.trim();
     const q = raw.toLowerCase();
     const all = getCommands();
 
-    const isExplicitAsk =
-      q.startsWith("?") ||
-      q.startsWith("ask ") ||
-      q.startsWith("how ") ||
-      q.startsWith("what ") ||
-      q.startsWith("why ") ||
-      q.startsWith("does ");
+    const isExplicitAsk = isQuestion(q);
 
     visibleCommands = q
       ? all.filter((c) => c.title.toLowerCase().includes(q) || c.sub.toLowerCase().includes(q) || c.keywords.includes(q))
@@ -690,8 +794,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
     if (!cmd) return;
     if (cmd.query) {
       input.value = cmd.query;
-      renderAnswer(cmd.query);
-      playPing(true);
+      askRemote(cmd.query);
       input.focus();
       return;
     }
@@ -718,6 +821,7 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
   }
 
   input.addEventListener("input", () => {
+    askSeq++; // typing cancels any in-flight AI answer
     selectedIdx = 0;
     renderList();
     playTick(920);
@@ -785,20 +889,114 @@ function initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast }) {
       }
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (visibleCommands[selectedIdx]) runSelected(selectedIdx);
-      else if (input.value.trim()) {
-        renderAnswer(input.value.trim());
-        playPing(true);
-      }
+      const raw = input.value.trim();
+      // Questions go to the AI; anything else runs the highlighted command.
+      if (raw && (isQuestion(raw) || !visibleCommands.length)) askRemote(raw);
+      else if (visibleCommands[selectedIdx]) runSelected(selectedIdx);
     }
   });
 
   return { open, close };
 }
 
+/* ==========================================================================
+   4. RECRUITER ROLE LENS (`?for=ai|fintech|web3|laravel`) (#5)
+   ========================================================================== */
+function initRecruiterLens({ onToast }) {
+  if (!recruiterLenses?.length) return { apply: () => {} };
+  let activeKey = "all";
+
+  function apply(key, { notify = true, updateUrl = true } = {}) {
+    const lens = recruiterLenses.find((l) => l.key === key) || recruiterLenses[0];
+    activeKey = lens.key;
+
+    // 1. Update lens bar chips & subtitle
+    $$("[data-lens]").forEach((btn) => {
+      const on = btn.dataset.lens === lens.key;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", String(on));
+    });
+    const subEl = $("[data-lens-sub]");
+    if (subEl) subEl.textContent = lens.sub;
+
+    // 2. Re-order featured project articles in .work__list without destroying canvases
+    const list = $(".work__list");
+    if (list && lens.order) {
+      lens.order.forEach((id, i) => {
+        const card = document.getElementById(id);
+        if (card) {
+          list.appendChild(card);
+          const idxEl = $(".project__idx", card);
+          if (idxEl) idxEl.textContent = `${pad(i + 1)} / ${pad(featured.length)}`;
+        }
+      });
+    }
+
+    // 3. Pre-filter the repository archive
+    if (lens.archiveFilter) {
+      const filterBtn = $(`[data-filter="${lens.archiveFilter}"]`);
+      filterBtn?.click();
+    }
+
+    // 4. Point primary CV links to the matching CV (Full-Stack/AI vs. Laravel/Backend)
+    const cvHref = profile[lens.cv] || profile.cv;
+    $$('a[href*="Paulji-Peters-"][href$="-CV.pdf"]').forEach((a) => {
+      if (a.textContent.includes("CV ↓") || a.textContent.includes("Download CV") || a.textContent.includes("Resume")) {
+        a.setAttribute("href", cvHref);
+      }
+    });
+
+    // 5. Update URL query parameter cleanly
+    if (updateUrl && history.replaceState) {
+      const url = new URL(location.href);
+      if (lens.key === "all") url.searchParams.delete("for");
+      else url.searchParams.set("for", lens.key);
+      history.replaceState(null, "", url.toString());
+    }
+
+    if (notify) {
+      playPing(true);
+      onToast?.(
+        lens.key === "all"
+          ? "Showing default full-stack engineering order"
+          : `Recruiter lens active: ${lens.label} (?for=${lens.key}) ✳`
+      );
+    }
+  }
+
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-lens]");
+    if (btn) {
+      apply(btn.dataset.lens, { notify: true, updateUrl: true });
+      return;
+    }
+    if (e.target.closest("[data-lens-share]")) {
+      const url = new URL(location.href);
+      if (activeKey === "all") url.searchParams.delete("for");
+      else url.searchParams.set("for", activeKey);
+      try {
+        await navigator.clipboard.writeText(url.toString());
+        playPing(true);
+        onToast?.(`Copied tailored link (?for=${activeKey}) ✳`);
+      } catch {
+        onToast?.(url.toString());
+      }
+    }
+  });
+
+  // Auto-apply if URL has ?for=... on load
+  const initial = new URLSearchParams(location.search).get("for")?.toLowerCase();
+  if (initial && recruiterLenses.some((l) => l.key === initial)) {
+    setTimeout(() => apply(initial, { notify: true, updateUrl: false }), 350);
+  }
+
+  return { apply };
+}
+
 export function initSystem({ onTheme, onToast } = {}) {
   const xrayDrawer = initXrayDrawer({ onToast });
   const telemetry = initTelemetry({ onToast });
+  const recruiterLens = initRecruiterLens({ onToast });
   const commandPalette = initCommandPalette({ xrayDrawer, telemetry, onTheme, onToast });
-  return { xrayDrawer, telemetry, commandPalette };
+  return { xrayDrawer, telemetry, recruiterLens, commandPalette };
 }

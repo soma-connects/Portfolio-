@@ -91,6 +91,24 @@ export const featured = [
               "-preset", "p4", "-b:v", "6M", "-f", "mp4", "pipe:1"]
     with subprocess.Popen(yt_cmd, stdout=subprocess.PIPE) as src:
         return subprocess.check_output(ff_cmd, stdin=src.stdout)`,
+      postmortem: {
+        title: "Streaming 4-Hour VODs into FFmpeg Without Touching Disk",
+        readTime: "4 min read",
+        sections: [
+          {
+            heading: "1. The Unit-Economics Wall",
+            body: "A naive clipping pipeline downloads a 4-hour 1080p60 Twitch or YouTube VOD (8–14 GB), runs Whisper across the entire audio track, and feeds frames to a vision model. At ~$3.40 in GPU and token compute per stream, a $19/mo creator SaaS goes bankrupt on a user's sixth upload. Worse, serverless GPU workers (Modal) mount ephemeral containers with strict disk ceilings—two concurrent VOD downloads crash the container with ENOSPC before FFmpeg even boots.",
+          },
+          {
+            heading: "2. Three-Tier Heuristic Pruning (94.2% Compute Saved)",
+            body: "Before calling a single LLM or downloading video bytes, an O(N) ingestion pass scans lightweight side-channel telemetry: chat replay bucketed into 10-second rolling windows (flagging Z-score velocity spikes ≥ 5.0× over the 5-minute baseline) cross-checked against audio RMS peaks (-4.1 dB) and low-fps OCR keyword triggers. This prunes 4 hours of raw video down to 4–8 candidate 60-second windows, eliminating 94.2% of downstream GPU work.",
+          },
+          {
+            heading: "3. Zero-Disk HTTP Byte-Range Piping",
+            body: "Even for surviving 60-second windows, writing temporary MP4 chunks to container storage added 15–30 seconds of I/O overhead. By invoking yt-dlp with --download-sections \"*start-end\" and -o -, only the exact HTTP byte-range for [t - 60s, t + 4s] is pulled from the CDN and piped directly via stdout into FFmpeg's stdin (pipe:0). FFmpeg applies the Dual-Box 9:16 crop filter, burns word-level captions, encodes via h264_nvenc, and streams pipe:1 straight to Cloudflare R2—leaving 0 MB on disk.",
+          },
+        ],
+      },
     },
   },
   {
@@ -111,6 +129,7 @@ export const featured = [
     stack: ["FastAPI", "Python", "PostgreSQL", "Supabase", "Next.js 15", "TypeScript", "Paystack", "Docker"],
     live: "https://ig-project-three.vercel.app",
     repo: null,
+    lab: "#lab", // interactive simulator in js/lab.js
     caption: "lifetime profit × tier % − debt = available reserve (never below zero)",
     xray: {
       metrics: [
@@ -132,20 +151,43 @@ export const featured = [
       codeLang: "PostgreSQL · ACID Ledger",
       code: `CREATE VIEW user_credit_reserve AS
 SELECT
-  u.id AS user_id,
-  COALESCE(SUM(t.profit_kobo), 0) AS lifetime_profit_kobo,
-  CASE
-    WHEN COUNT(t.id) >= 20 AND u.trust_score >= 80 THEN 30
-    WHEN COUNT(t.id) >= 8  AND u.trust_score >= 55 THEN 25
-    WHEN COUNT(t.id) >= 3  AND u.trust_score >= 30 THEN 20
-    ELSE 0
-  END AS tier_pct,
-  GREATEST(0,
-    (COALESCE(SUM(t.profit_kobo), 0) * tier_pct / 100) - u.active_debt_kobo
-  ) AS available_reserve_kobo
-FROM users u
-LEFT JOIN vtu_transactions t ON t.user_id = u.id AND t.status = 'SUCCESS'
-GROUP BY u.id;`,
+  user_id,
+  lifetime_profit_kobo,
+  tier_pct,
+  GREATEST(0, (lifetime_profit_kobo * tier_pct / 100) - active_debt_kobo) AS available_reserve_kobo
+FROM (
+  SELECT
+    u.id AS user_id,
+    u.active_debt_kobo,
+    COALESCE(SUM(t.profit_kobo), 0) AS lifetime_profit_kobo,
+    CASE
+      WHEN COUNT(t.id) >= 20 AND u.trust_score >= 80 THEN 30
+      WHEN COUNT(t.id) >= 8  AND u.trust_score >= 55 THEN 25
+      WHEN COUNT(t.id) >= 3  AND u.trust_score >= 30 THEN 20
+      ELSE 0
+    END AS tier_pct
+  FROM users u
+  LEFT JOIN vtu_transactions t ON t.user_id = u.id AND t.status = 'SUCCESS'
+  GROUP BY u.id
+) ledger;`,
+      postmortem: {
+        title: "Making Double-Spend Mathematically Impossible with Advisory Locks",
+        readTime: "4 min read",
+        sections: [
+          {
+            heading: "1. Why Micro-Lending Rails Bleed Capital",
+            body: "Consumer credit platforms in emerging markets face two compounding failure modes: high default rates on external capital (18–35%) and race-condition double-spends when users on high-jitter 3G networks tap 'Borrow' multiple times or fire concurrent requests. If a user has ₦500 in available credit and two POST /borrow requests read the database before either commits, both pass the application check and disburse ₦1,000.",
+          },
+          {
+            heading: "2. The Safe Margin Invariant & Kobo Integers",
+            body: "First, IEEE-754 floats are banned across the stack—every transaction, margin, and debt balance is stored as a 64-bit integer in kobo (₦1 = 100 kobo). Second, the platform never lends external capital: available credit is derived inside a deterministic PostgreSQL view as GREATEST(0, (lifetime_profit_kobo * tier_pct / 100) - active_debt_kobo). Even in a worst-case default, principal at risk is strictly ₦0.00.",
+          },
+          {
+            heading: "3. Serializing Concurrent Draws with pg_advisory_xact_lock",
+            body: "A SQL view alone does not prevent Read-Committed race conditions between SELECT and INSERT. Before reading user_credit_reserve, the FastAPI transaction executes SELECT pg_advisory_xact_lock(user_id). This acquires a lightweight, transaction-scoped mutex in PostgreSQL RAM keyed to that specific customer without locking the whole table. Concurrent requests for the same user queue in microseconds, re-evaluate the updated view after the first loan commits, and deterministically reject with 409 Conflict.",
+          },
+        ],
+      },
     },
   },
   {
@@ -200,6 +242,24 @@ GROUP BY u.id;`,
   const shoulderCm = Math.hypot(dx, rightShoulder.y - leftShoulder.y) * cmPerPx;
   return { cmPerPx: +cmPerPx.toFixed(4), shoulderCm: +shoulderCm.toFixed(1), yawDeg };
 }`,
+      postmortem: {
+        title: "How a 25° Shoulder Twist Silently Shrinks Body Width by 9.4%",
+        readTime: "3 min read",
+        sections: [
+          {
+            heading: "1. The Monocular Scale Ambiguity",
+            body: "A single phone camera projects a 3D human body onto a 2D pixel grid without depth or focal-length metadata: a 220-pixel shoulder span could belong to a child standing close or an adult standing far away. EFitMi solves scale on-device by anchoring on any standard bank or ID card held to the sternum. Because ISO/IEC 7810 ID-1 cards measure exactly 85.60 × 53.98 mm worldwide, detecting the card's pixel width yields cm_per_px = 8.56 / card_width_px in the exact depth plane of the torso.",
+          },
+          {
+            heading: "2. The Cosine Foreshortening Trap",
+            body: "During early testing, users naturally angled one shoulder slightly toward the camera while taking a selfie. Projecting a torso rotated by yaw angle θ onto a 2D sensor foreshortens horizontal landmark distance by cos(θ). At a subtle 25° turn, cos(25°) = 0.9063—silently under-reporting a 46.0 cm chest as 41.7 cm (a 9.4% error that ruins garment sizing).",
+          },
+          {
+            heading: "3. Acromion Z-Depth Guard & 0.000 cm Parity",
+            body: "Rather than attempting noisy 3D mesh reconstruction on mobile GPUs, we compute the z-depth asymmetry between MediaPipe's left and right acromion landmarks (landmarks 11 and 12) relative to horizontal span: yaw = |atan2(dz, dx)|. If yaw exceeds 12.0°, the capture gate locks and instructs the user to square their shoulders. Porting the full geometric pipeline from Python to TypeScript achieved 0.000 cm divergence across all 7 circumference outputs.",
+          },
+        ],
+      },
     },
   },
   {
@@ -255,6 +315,24 @@ GROUP BY u.id;`,
   }
   return bestLag > 0 ? sampleRate / bestLag : null;
 }`,
+      postmortem: {
+        title: "60fps Time-Domain Autocorrelation & Mobile Safari WebRTC Ducking",
+        readTime: "3 min read",
+        sections: [
+          {
+            heading: "1. Why FFT Spectrum Peaks Fail on Human Voice",
+            body: "In PitchBird, players steer an avatar by singing higher or lower. Naive pitch detectors pick the loudest bin from a WebAudio AnalyserNode FFT. On human vowels, the second or third harmonic overtone is frequently louder than the fundamental frequency (f0), causing the detected pitch to violently jump an octave mid-note and making flight control unplayable.",
+          },
+          {
+            heading: "2. Time-Domain Autocorrelation in 85–600 Hz",
+            body: "Instead of frequency-domain peaks, we run a 60fps time-domain autocorrelation loop over the raw Float32 PCM buffer after an RMS silence gate (0.018). By bounding lag search strictly to the human vocal range (sampleRate / 600 to sampleRate / 85), we find the true periodic waveform interval regardless of harmonic overtone energy.",
+          },
+          {
+            heading: "3. Splitting the MediaStream to Defeat Safari Audio Ducking",
+            body: "When WebRTC peer voice chat and local WebAudio pitch analysis ran simultaneously on iOS Safari, the OS hardware echo canceller aggressively ducked and distorted the local analyser buffer whenever a peer spoke. Cloning the MediaStreamTrack into an isolated high-pass/low-pass biquad filter chain for autocorrelation—decoupled from the WebRTC peer gain bus—restored rock-solid 60fps tracking.",
+          },
+        ],
+      },
     },
   },
   {
@@ -309,6 +387,24 @@ GROUP BY u.id;`,
   }
   return tx;
 }`,
+      postmortem: {
+        title: "Atomic Batch Packing & Zero-Balance Proofs on Solana SPL",
+        readTime: "4 min read",
+        sections: [
+          {
+            heading: "1. Stranded Lamports in Kora Paymaster Treasuries",
+            body: "Kora paymaster operators sponsor Associated Token Accounts (ATAs) so users can transact gaslessly. Each sponsored ATA locks 0.00203928 SOL (2,039,280 lamports) in rent-exempt storage. Across tens of thousands of users who eventually empty their token balances, significant treasury capital remains permanently stranded on-chain.",
+          },
+          {
+            heading: "2. Why Naive Batch Closing Fails Whole Transactions",
+            body: "Solana transactions are strictly atomic: if you pack 18 closeAccount instructions into a single transaction and even one account still holds 1 raw token unit—or had its closeAuthority revoked by the user a slot earlier—the entire transaction aborts and wastes priority fees. Worse, exceeding Solana's 1232-byte packet ceiling drops the transaction at the TPU.",
+          },
+          {
+            heading: "3. Two-Phase Pre-Flight Proof & 18-IX Packing",
+            body: "N-Reclaim decodes raw SPL AccountLayout bytes off-chain to prove three invariants before a pubkey enters a batch: amount === 0n, state !== Frozen, and closeAuthority === operator. Surviving accounts are packed 18 instructions per versioned transaction (staying safely under 1232 bytes) and run through simulateTransaction before signing, guaranteeing 100% atomic execution and zero user interference.",
+          },
+        ],
+      },
     },
   },
   {
@@ -364,6 +460,24 @@ GROUP BY u.id;`,
   });
   return db.from("bookings").update({ escrow_state: "RELEASED" }).eq("id", job.id);
 }`,
+      postmortem: {
+        title: "Idempotent Escrow State Machines Against Out-of-Order Webhooks",
+        readTime: "3 min read",
+        sections: [
+          {
+            heading: "1. The Two-Sided Marketplace Trust Deadlock",
+            body: "In Nigerian cities, homeowners hesitate to prepay artisans due to no-shows, while artisans refuse to travel without guaranteed pay. Holding funds in platform escrow solves the human trust problem, but introduces a severe distributed-systems hazard: bank-transfer webhooks during inter-bank congestion frequently arrive out of order or retry up to 3×.",
+          },
+          {
+            heading: "2. Guarding Against Double-Payouts",
+            body: "If a release webhook or client confirmation triggers twice before the database reflects the updated state, the platform initiates two Paystack transfers for a single booking—draining the escrow pool. Application-level checks in serverless functions cannot stop concurrent invocations from racing.",
+          },
+          {
+            heading: "3. Atomic RPC Row Locking & Deterministic Transfer Keys",
+            body: "Every webhook first verifies the raw payload against Paystack's HMAC-SHA512 signature. To release funds, the Supabase Edge Function calls a Postgres RPC (lock_booking_for_release) that acquires a SELECT ... FOR UPDATE row lock and asserts escrow_state === 'FUNDED_LOCKED' in one atomic step. Finally, the outbound Paystack transfer passes a deterministic idempotency reference (lezerv_rel_${job.id}), ensuring the payment gateway itself rejects any duplicate payout attempt.",
+          },
+        ],
+      },
     },
   },
 ];
@@ -491,4 +605,87 @@ export const journey = [
 export const marquee = [
   "TypeScript", "Laravel", "Next.js", "Python", "Rust", "Solana", "Gemini", "PostgreSQL",
   "FFmpeg", "MediaPipe", "FastAPI", "Supabase", "WebRTC", "Paystack", "Docker", "Vue",
+];
+
+/* --------------------------------------------------------------------------
+   VERIFIED PRODUCTION PROOF & AUDIT METRICS
+   Every card is backed by a deterministic invariant, live deployment, or
+   verifiable public repository—zero fabricated quotes.
+   -------------------------------------------------------------------------- */
+export const proofCards = [
+  {
+    badge: "SUPERTEAM NIGERIA BOUNTY",
+    metric: "0.00203928 SOL",
+    unit: "reclaimed per abandoned ATA",
+    system: "N-Reclaim · Solana SPL",
+    quote:
+      "Built for Kora paymaster operators to sweep stranded rent-exempt deposits. Enforces a strict two-phase zero-balance + close-authority proof and packs 18 atomic close instructions per 1232-byte transaction.",
+    cta: { label: "Inspect N-Reclaim Blueprint", xray: "n-reclaim" },
+  },
+  {
+    badge: "ACID LEDGER INVARIANT",
+    metric: "₦0.00",
+    unit: "external principal at risk",
+    system: "My Data Keep · PostgreSQL",
+    quote:
+      "Micro-credit bounded mathematically by earned customer margin (tier% × lifetime_profit − active_debt) in integer kobo, serialized under concurrent 3G retries via pg_advisory_xact_lock.",
+    cta: { label: "Stress-Test in Lab ↓", href: "#lab" },
+  },
+  {
+    badge: "ON-DEVICE COMPUTER VISION",
+    metric: "0.000 cm Δ",
+    unit: "Python ↔ TypeScript parity",
+    system: "EFitMi · MediaPipe Pose",
+    quote:
+      "Calibrates monocular phone cameras against an ISO-7810 bank card (85.60 mm) with an acromion z-depth cosine guard that rejects torso rotation above 12°—with zero bytes uploaded to a server.",
+    cta: { label: "Inspect EFitMi Blueprint", xray: "efitmi" },
+  },
+];
+
+/* --------------------------------------------------------------------------
+   RECRUITER LENS PROFILES (?for=ai | ?for=fintech | ?for=web3 | ?for=laravel)
+   Re-ranks featured systems, pre-filters the archive, and highlights the
+   most relevant CV when a hiring manager opens a tailored link or clicks a lens.
+   -------------------------------------------------------------------------- */
+export const recruiterLenses = [
+  {
+    key: "all",
+    label: "All Systems",
+    sub: "Full-stack · AI pipelines, fintech rails & on-chain automation.",
+    order: ["ncliper", "datakeep", "efitmi", "voice-party", "n-reclaim", "lezerv"],
+    archiveFilter: "all",
+    cv: "cv",
+  },
+  {
+    key: "ai",
+    label: "AI & Vision",
+    sub: "Focus: Gemini Flash 2.0, on-device MediaPipe, FFmpeg GPU workers & WebAudio DSP.",
+    order: ["ncliper", "efitmi", "voice-party", "datakeep", "n-reclaim", "lezerv"],
+    archiveFilter: "ai",
+    cv: "cv",
+  },
+  {
+    key: "fintech",
+    label: "Fintech & Payments",
+    sub: "Focus: Integer-kobo ACID ledgers, pg_advisory_xact_lock, Paystack escrow & HMAC webhooks.",
+    order: ["datakeep", "lezerv", "n-reclaim", "ncliper", "efitmi", "voice-party"],
+    archiveFilter: "fintech",
+    cv: "cv",
+  },
+  {
+    key: "web3",
+    label: "Solana & Rust",
+    sub: "Focus: SPL Token rent recovery, 18-IX batch packing & Anchor vulnerability labs.",
+    order: ["n-reclaim", "datakeep", "ncliper", "lezerv", "efitmi", "voice-party"],
+    archiveFilter: "web3",
+    cv: "cv",
+  },
+  {
+    key: "laravel",
+    label: "Laravel & Backend",
+    sub: "Focus: Laravel 12, PHP 8, FastAPI, PostgreSQL schemas, Argon2id auth & threat models.",
+    order: ["datakeep", "lezerv", "ncliper", "n-reclaim", "efitmi", "voice-party"],
+    archiveFilter: "laravel",
+    cv: "cvLaravel",
+  },
 ];

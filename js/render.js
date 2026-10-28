@@ -6,7 +6,19 @@
    Any text that came from data goes through esc() first. It's good hygiene
    against XSS, even though here we write the data ourselves.
    ========================================================================== */
-import { profile, stats, featured, archive, archiveFilters, incubating, layers, journey, marquee } from "./data.js";
+import {
+  profile,
+  stats,
+  featured,
+  archive,
+  archiveFilters,
+  incubating,
+  layers,
+  journey,
+  marquee,
+  proofCards,
+  recruiterLenses,
+} from "./data.js";
 
 const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -32,6 +44,55 @@ function renderStats() {
     .join("");
 }
 
+/* --- Verified Production Proof & Bounties --- */
+function renderProof() {
+  if (!proofCards?.length) return "";
+  return proofCards
+    .map(
+      (c) => `
+      <article class="proof__card reveal">
+        <div class="proof__top mono">
+          <span class="proof__badge">${esc(c.badge)}</span>
+          <span class="proof__sys">${esc(c.system)}</span>
+        </div>
+        <div class="proof__stat">
+          <strong class="proof__val">${esc(c.metric)}</strong>
+          <span class="proof__unit mono">${esc(c.unit)}</span>
+        </div>
+        <p class="proof__quote">${esc(c.quote)}</p>
+        ${
+          c.cta?.xray
+            ? `<button class="proof__cta mono" type="button" data-xray="${esc(c.cta.xray)}">${esc(c.cta.label)} ↗</button>`
+            : c.cta?.href
+            ? `<a class="proof__cta mono" href="${esc(c.cta.href)}">${esc(c.cta.label)}</a>`
+            : ""
+        }
+      </article>`
+    )
+    .join("");
+}
+
+/* --- Recruiter Role Lens Bar (?for=ai | fintech | web3 | laravel) --- */
+function renderLenses() {
+  if (!recruiterLenses?.length) return "";
+  return `
+    <div class="lens__head mono">
+      <span>RECRUITER VIEW // TAILOR BY ROLE</span>
+      <span class="lens__sub" data-lens-sub>${esc(recruiterLenses[0].sub)}</span>
+    </div>
+    <div class="lens__chips" role="group" aria-label="Tailor portfolio by engineering role">
+      ${recruiterLenses
+        .map(
+          (l, i) =>
+            `<button class="lens__chip mono ${i === 0 ? "is-active" : ""}" type="button" data-lens="${esc(l.key)}" aria-pressed="${
+              i === 0
+            }">${esc(l.label)}</button>`
+        )
+        .join("")}
+      <button class="lens__share mono" type="button" data-lens-share title="Copy shareable link for this role view">[ Copy tailored link ↗ ]</button>
+    </div>`;
+}
+
 /* --- Marquee: the word list is repeated so the loop has no visible seam --- */
 function renderMarquee() {
   const words = marquee.map((w) => `<span>${esc(w)}</span>`).join("");
@@ -55,6 +116,7 @@ function renderFeatured() {
         .join(" ");
       const links = [
         p.live && `<a class="btn btn--solid magnetic" href="${p.live}" target="_blank" rel="noopener" data-cursor="Visit">Live site ↗</a>`,
+        p.lab && `<a class="btn magnetic" href="${esc(p.lab)}" data-cursor="Break it">Break it live ↓</a>`,
         p.xray && `<button class="btn btn--xray magnetic" type="button" data-xray="${esc(p.id)}" data-cursor="X-Ray"><span class="btn__pulse" aria-hidden="true"></span>Architecture X-Ray</button>`,
         p.repo
           ? `<a class="btn magnetic" href="${p.repo}" target="_blank" rel="noopener" data-cursor="Code">Source ↗</a>`
@@ -172,6 +234,8 @@ function renderJourney() {
 
 export function renderAll() {
   mount("stats", renderStats());
+  mount("proof", renderProof());
+  mount("lenses", renderLenses());
   mount("marquee", renderMarquee());
   mount("featured", renderFeatured());
   mount("filters", renderFilters());

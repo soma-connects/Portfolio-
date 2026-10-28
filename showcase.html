@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paulji Peters · Engineering & Technical Solutions Showcase</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/fonts.css" />
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #121216;
+      --card-hover: #17171d;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(255, 91, 31, 0.4);
+      --signal: #ff5b1f;
+      --signal-glow: rgba(255, 91, 31, 0.15);
+      --live: #3ddc97;
+      --text-main: #f5f3ef;
+      --text-muted: #9e9aa0;
+      --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+      --font-mono: "Geist Mono", monospace;
+      --font-serif: "Instrument Serif", Georgia, serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      padding: 40px 20px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1080px;
+    }
+
+    /* Print & Export Bar */
+    .action-bar {
+      width: 100%;
+      max-width: 1080px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-export {
+      background: var(--signal);
+      color: #0c0c0e;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    .btn-export:hover {
+      transform: translateY(-1px);
+      opacity: 0.92;
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    /* Card Board */
+    .flyer {
+      background: #0d0d11;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: clamp(28px, 5vw, 56px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 100px var(--signal-glow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .flyer::before {
+      content: "";
+      position: absolute;
+      top: -120px;
+      right: -120px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(255, 91, 31, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 32px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 36px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 600;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 12px;
+    }
+    .brand-title em {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--signal);
+      font-weight: 400;
+    }
+    .tagline {
+      font-size: clamp(1rem, 1.8vw, 1.25rem);
+      color: var(--text-muted);
+      max-width: 580px;
+    }
+
+    .author-badge {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .author-name {
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .author-role {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--signal);
+      letter-spacing: 0.06em;
+    }
+    .author-links {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+    }
+    .author-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .author-links a:hover { color: var(--text-main); }
+
+    /* Section Headings */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--signal);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Core Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .service-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .service-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+    .service-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    .service-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .service-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Proof of Work Bento Grid */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-bottom: 48px;
+    }
+    .proj-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.25s, transform 0.25s, background-color 0.25s;
+    }
+    .proj-card:hover {
+      background: var(--card-hover);
+      border-color: var(--signal);
+      transform: translateY(-3px);
+    }
+    .proj-card--large {
+      grid-column: span 7;
+    }
+    .proj-card--medium {
+      grid-column: span 5;
+    }
+    .proj-card--small {
+      grid-column: span 4;
+    }
+
+    .proj-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+    .proj-tag {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--signal);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .proj-live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--live);
+    }
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--live);
+      box-shadow: 0 0 6px rgba(61, 220, 151, 0.6);
+    }
+
+    .proj-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .proj-pitch {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--text-main);
+      font-size: 1rem;
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+    .proj-body {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .proj-stats {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #dfdcd5;
+      border-left: 2px solid var(--signal);
+    }
+
+    .proj-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      margin-top: auto;
+    }
+    .proj-stack {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .proj-cta {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--signal);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Footer / Engagement Block */
+    .cta-banner {
+      background: linear-gradient(145deg, #16161c 0%, #0d0d12 100%);
+      border: 1px solid var(--border-accent);
+      border-radius: 16px;
+      padding: 32px clamp(20px, 4vw, 40px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .cta-left h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      margin-bottom: 6px;
+    }
+    .cta-left p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+    }
+    .cta-contacts {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .cta-pill {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .cta-pill:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--text-main);
+    }
+    .cta-pill--primary {
+      background: var(--signal);
+      color: #0c0c0e;
+      border-color: var(--signal);
+      font-weight: 600;
+    }
+    .cta-pill--primary:hover {
+      background: #ff6f3b;
+      border-color: #ff6f3b;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .proj-card--large, .proj-card--medium, .proj-card--small {
+        grid-column: span 12;
+      }
+      .author-badge {
+        text-align: left;
+      }
+      .author-links {
+        justify-content: flex-start;
+      }
+    }
+
+    @media print {
+      body { padding: 0; background: #fff; color: #000; }
+      .action-bar { display: none; }
+      .flyer { box-shadow: none; border: none; background: #fff; color: #000; }
+      .proj-card, .service-card, .cta-banner { border: 1px solid #ccc; background: #fafafa; }
+      .proj-pitch, .brand-title em, .proj-cta { color: #d63f00; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Navigation -->
+  <div class="action-bar">
+    <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+      PROJECT SHOWCASE &amp; CAPABILITIES FLYER
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <a href="index.html" class="btn-export btn-secondary">← Back to Portfolio</a>
+      <button onclick="window.print()" class="btn-export">Export / Print PDF 🖨️</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="flyer">
+
+      <!-- Header Section -->
+      <header class="header">
+        <div>
+          <h1 class="brand-title">Full-Stack, AI &amp; <em>On-Chain Engineering.</em></h1>
+          <p class="tagline">Production-grade web apps, intelligent media pipelines, and financial infrastructure designed and delivered end-to-end.</p>
+        </div>
+        <div class="author-badge">
+          <div class="author-name">Peters Paulji</div>
+          <div class="author-role">Full-Stack &amp; AI Engineer</div>
+          <div class="author-links">
+            <a href="mailto:pauljizy@gmail.com">pauljizy@gmail.com</a>
+            <span>•</span>
+            <a href="tel:+2348148935054">+234 814 893 5054</a>
+          </div>
+          <div class="author-links">
+            <a href="https://github.com/soma-connects" target="_blank" rel="noopener">github.com/soma-connects ↗</a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Services & Deliverables -->
+      <div class="section-label">What We Build &amp; Ship For You</div>
+      <section class="services-grid">
+        <div class="service-card">
+          <div class="service-icon">⚡</div>
+          <div class="service-title">AI Pipelines &amp; Workflows</div>
+          <div class="service-desc">Gemini AI / LLM orchestration, vector search (pgvector), automated video processing (FFmpeg + yt-dlp), and serverless GPU workers.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">🔒</div>
+          <div class="service-title">Fintech &amp; Secure Backends</div>
+          <div class="service-desc">Zero-float integer accounting, Paystack/Stripe rails, escrow mechanics, KYC/threat-model auth, and fault-tolerant PostgreSQL schemas.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">📱</div>
+          <div class="service-title">Modern Web &amp; Mobile Apps</div>
+          <div class="service-desc">Next.js 15 App Router, React 19, TypeScript strict mode, Tailwind styling, and cross-platform native deployment via Capacitor.</div>
+        </div>
+        <div class="service-card">
+          <div class="service-icon">⛓️</div>
+          <div class="service-title">Web3 &amp; Event Automation</div>
+          <div class="service-desc">Solana Web3.js integration, on-chain event monitoring, treasury bots, and gas/rent reclamation workflows.</div>
+        </div>
+      </section>
+
+      <!-- Proof of Work Grid -->
+      <div class="section-label">Selected Deployed Systems (Tap Any to View Live)</div>
+      <section class="projects-grid">
+
+        <!-- 01: Ncliper -->
+        <a href="https://ncliper.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--large">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">AI Media SaaS · Flagship</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">Ncliper — AI Viral Video Engine</h2>
+            <p class="proj-pitch">“Transforms 4-hour live streams into viral short clips automatically.”</p>
+            <p class="proj-body">End-to-end clipping SaaS with 3-tier heuristic spike detection (chat velocity +500%, audio peaks, OCR), Gemini Flash virality scoring, and dual-box 9:16 FFmpeg rendering on GPU workers.</p>
+            <div class="proj-stats">
+              Metric: Handles 4-hour streams without downloading full VODs to disk · 61+ monorepo commits with Jest CI/CD.
+            </div>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">Next.js 15 · Python · Gemini · FFmpeg · Modal · R2</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+        <!-- 02: EFitMi -->
+        <a href="https://efitmi.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--medium">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">Computer Vision</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">EFitMi — On-Device Body Measure</h2>
+            <p class="proj-pitch">“Turn a bank card and phone camera into an accurate tape measure.”</p>
+            <p class="proj-body">Calibrates real-world scale using standard ISO 7810 card dimensions (85.6mm) and MediaPipe Pose landmarks. 100% on-device processing so photos never leave the browser.</p>
+            <div class="proj-stats">
+              Precision: Verified 0.000 cm parity between Python prototype and TypeScript production engine.
+            </div>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">Next.js · TypeScript · MediaPipe · Canvas API</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+        <!-- 03: My Data Keep -->
+        <a href="https://ig-project-three.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--medium">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">Fintech &amp; Credit Rails</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">My Data Keep — Safe Margin Credit</h2>
+            <p class="proj-pitch">“Emergency data reserve that is mathematically incapable of losing capital.”</p>
+            <p class="proj-body">Automated customer credit limits calculated exclusively from historical customer margin (`tier% × lifetime profit − debt`), enforced strictly through integer kobo logic and PostgreSQL views.</p>
+            <div class="proj-stats">
+              Fintech: Zero float rounding errors · Double-spend prevention tests.
+            </div>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">FastAPI · PostgreSQL · Next.js · Paystack · Docker</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+        <!-- 04: Voice Party Arcade -->
+        <a href="https://social-game-bay.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--small">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">Real-Time · WebRTC</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">Voice Party Arcade</h2>
+            <p class="proj-pitch">“Multiplayer party board game played with your voice.”</p>
+            <p class="proj-body">Real-time pitch detection avatar controls (PitchBird) and live speech-to-text trivia scoring across Hausa, Igbo, Yoruba, and English.</p>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">Next.js · WebRTC · Gemini · Firebase</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+        <!-- 05: SecureHub Admin -->
+        <a href="https://secure-hub-admin-dashboard.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--small">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">Dashboard &amp; API</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">SecureHub Admin</h2>
+            <p class="proj-pitch">“Ops control dashboard for on-demand services.”</p>
+            <p class="proj-body">Full-featured management interface (98% strict TypeScript) with real-time order tracking, laundry logistics, and role-based permissions.</p>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">React · Express · Supabase · Zod</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+        <!-- 06: N-Reclaim -->
+        <a href="https://n-reclaim.vercel.app" target="_blank" rel="noopener" class="proj-card proj-card--small">
+          <div>
+            <div class="proj-top">
+              <span class="proj-tag">Solana Automation</span>
+              <span class="proj-live-indicator"><span class="live-dot"></span> Live in Production</span>
+            </div>
+            <h2 class="proj-title">N-Reclaim</h2>
+            <p class="proj-pitch">“Recovers locked rent from abandoned token accounts.”</p>
+            <p class="proj-body">Automated treasury bot checking balance &amp; authority conditions to close dead accounts and recover SOL back to operator treasuries.</p>
+          </div>
+          <div class="proj-bottom">
+            <span class="proj-stack">TypeScript · Solana Web3.js · SPL Token</span>
+            <span class="proj-cta">Launch Site ↗</span>
+          </div>
+        </a>
+
+      </section>
+
+      <!-- Call to Action Banner -->
+      <footer class="cta-banner">
+        <div class="cta-left">
+          <h3>Need a system engineered or deployed?</h3>
+          <p>Available for full product builds, specialized AI/fintech pipelines, and contract roles.</p>
+        </div>
+        <div class="cta-contacts">
+          <a href="mailto:pauljizy@gmail.com" class="cta-pill cta-pill--primary">Email: pauljizy@gmail.com</a>
+          <a href="tel:+2348148935054" class="cta-pill">Call: +234 814 893 5054</a>
+          <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener" class="cta-pill">Download CV ↓</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+</body>
+</html>

@@ -82,7 +82,19 @@
       <a href="showcase.html" data-cursor="Flyer">Services &amp; Card ↗</a>
       <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener" data-cursor="PDF">CV ↓</a>
     </nav>
-    <div class="nav__status mono"><span class="live-dot"></span><span>Available</span></div>
+    <div class="nav__tools mono">
+      <button class="nav__pill" type="button" data-sound-toggle aria-pressed="false" data-cursor="Audio" title="Toggle WebAudio signal sonification">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span data-sound-label>Sound · Off</span>
+      </button>
+      <button class="nav__pill" type="button" data-xray-mode-toggle aria-pressed="false" data-cursor="Telemetry" title="Toggle Telemetry X-Ray HUD (Shift+X)">
+        <span>X-Ray</span>
+      </button>
+      <button class="nav__pill nav__pill--cmd" type="button" data-cmd-open data-cursor="Terminal" title="Open Signal Command Palette (⌘K or /)">
+        <span>⌘K</span>
+      </button>
+      <div class="nav__status"><span class="live-dot"></span><span class="hide-md">Available</span></div>
+    </div>
     <button class="nav__menu mono" aria-expanded="false" aria-controls="menu">Menu</button>
   </header>
 
@@ -96,6 +108,11 @@
       <a href="showcase.html"><span class="mono">06</span>Services &amp; Flyer ↗</a>
       <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener"><span class="mono">07</span>Resume / CV ↓</a>
     </nav>
+    <div class="menu__tools mono">
+      <button class="nav__pill" type="button" data-cmd-open>⌘K Terminal</button>
+      <button class="nav__pill" type="button" data-sound-toggle aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span data-sound-label>Sound · Off</span></button>
+      <button class="nav__pill" type="button" data-xray-mode-toggle aria-pressed="false">Telemetry X-Ray</button>
+    </div>
     <p class="menu__foot mono">pauljizy@gmail.com · +234 814 893 5054</p>
   </div>
 
@@ -230,6 +247,58 @@
       <a href="#top" data-cursor="Up">Back to top ↑</a>
     </div>
   </footer>
+
+  <!-- ==================== ARCHITECTURE X-RAY DRAWER (#2) ==================== -->
+  <aside class="xray" id="xray-drawer" role="dialog" aria-modal="true" aria-labelledby="xray-title" aria-hidden="true">
+    <div class="xray__backdrop"></div>
+    <div class="xray__panel">
+      <header class="xray__head">
+        <div class="xray__top mono">
+          <span class="xray__top-title" id="xray-title">BLUEPRINT // ARCHITECTURE X-RAY</span>
+          <button class="xray__close mono" type="button" data-xray-close>[ ESC · Close ]</button>
+        </div>
+        <div class="xray__tabs" role="tablist" aria-label="Select featured system"></div>
+      </header>
+      <div class="xray__body"></div>
+    </div>
+  </aside>
+
+  <!-- ================ COMMAND PALETTE + SIGNAL TERMINAL (#3) ================ -->
+  <div class="cmd" id="cmd-palette" role="dialog" aria-modal="true" aria-label="Signal Command Palette and Terminal" aria-hidden="true">
+    <div class="cmd__backdrop"></div>
+    <div class="cmd__box">
+      <div class="cmd__bar">
+        <span class="cmd__prompt mono">&gt;_</span>
+        <input class="cmd__input" type="text" placeholder="Type a command, jump to a system, or ask a question (e.g. 'ask fintech' or 'solana')…" autocomplete="off" spellcheck="false" />
+        <button class="cmd__esc mono" type="button" data-cmd-close>ESC</button>
+      </div>
+      <div class="cmd__answer" hidden></div>
+      <ul class="cmd__list" role="listbox" aria-label="Commands"></ul>
+      <footer class="cmd__foot mono">
+        <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+        <span><kbd>↵</kbd> Execute / Ask</span>
+        <span><kbd>Shift</kbd>+<kbd>X</kbd> Telemetry X-Ray</span>
+        <span><kbd>?</kbd> Ask Signal AI</span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= TELEMETRY X-RAY HUD OVERLAY (#3) ================= -->
+  <aside class="tel mono" id="telemetry-hud" aria-hidden="true">
+    <div class="tel__head">
+      <span><i class="live-dot"></i> TELEMETRY X-RAY</span>
+      <button class="tel__close mono" type="button" data-xray-mode-toggle>[ × ]</button>
+    </div>
+    <canvas class="tel__spark" width="180" height="34" aria-hidden="true"></canvas>
+    <dl class="tel__grid">
+      <div><dt>FRAME RATE</dt><dd data-tel-fps>60 FPS</dd></div>
+      <div><dt>FRAME BUDGET</dt><dd data-tel-ms>16.6 ms</dd></div>
+      <div><dt>SCROLL POS</dt><dd data-tel-scroll>0px (0%)</dd></div>
+      <div><dt>DOM TREE</dt><dd data-tel-dom>-- nodes</dd></div>
+      <div><dt>VIEWPORT</dt><dd data-tel-vp>--</dd></div>
+      <div><dt>DEPENDENCIES</dt><dd>0 · Vanilla</dd></div>
+    </dl>
+  </aside>
 
   <div class="toast mono" role="status" aria-live="polite"></div>
 

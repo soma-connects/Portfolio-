@@ -55,6 +55,7 @@ function renderFeatured() {
         .join(" ");
       const links = [
         p.live && `<a class="btn btn--solid magnetic" href="${p.live}" target="_blank" rel="noopener" data-cursor="Visit">Live site ↗</a>`,
+        p.xray && `<button class="btn btn--xray magnetic" type="button" data-xray="${esc(p.id)}" data-cursor="X-Ray"><span class="btn__pulse" aria-hidden="true"></span>Architecture X-Ray</button>`,
         p.repo
           ? `<a class="btn magnetic" href="${p.repo}" target="_blank" rel="noopener" data-cursor="Code">Source ↗</a>`
           : `<span class="btn btn--ghost" title="This repository is private">Source · private</span>`,
@@ -63,7 +64,7 @@ function renderFeatured() {
         .join("");
 
       return `
-      <article class="project" id="${p.id}" aria-labelledby="${p.id}-title">
+      <article class="project" id="${p.id}" aria-labelledby="${p.id}-title" data-telemetry-node="SYS_${n}:${esc(p.id.toUpperCase())}">
         <div class="project__text">
           <div class="project__meta mono">
             <span class="project__idx">${n} / ${pad(featured.length)}</span>
@@ -80,7 +81,11 @@ function renderFeatured() {
         <figure class="figure">
           <div class="figure__frame">
             <canvas data-visual="${p.visual}" role="img" aria-label="Animated diagram: ${esc(p.caption)}"></canvas>
-            <div class="figure__hud mono"><span class="figure__rec">Live figure</span><span>${esc(p.role)}</span></div>
+            <div class="figure__hud mono">
+              <span class="figure__rec">Live figure</span>
+              <button class="figure__inspect mono" type="button" data-xray="${esc(p.id)}" data-cursor="Blueprint">[ Inspect blueprint ↗ ]</button>
+              <span>${esc(p.role)}</span>
+            </div>
           </div>
           <figcaption class="mono"><span>Fig. ${n}</span><span>${esc(p.caption)}</span></figcaption>
         </figure>

@@ -188,7 +188,7 @@ function initMenu() {
     document.body.style.overflow = open ? "hidden" : "";
   };
   btn.addEventListener("click", () => set(!menu.classList.contains("is-open")));
-  $$("a", menu).forEach((a) => a.addEventListener("click", () => set(false)));
+  $$("a, [data-cmd-open], [data-xray-mode-toggle]", menu).forEach((el) => el.addEventListener("click", () => set(false)));
   document.addEventListener("keydown", (e) => e.key === "Escape" && set(false));
 }
 

@@ -13,7 +13,9 @@ import { renderAll } from "./render.js";
 import { initHero } from "./hero.js";
 import { initVisuals } from "./visuals.js";
 import { initPortrait } from "./portrait.js";
-import { initMotion } from "./motion.js";
+import { initMotion, toast } from "./motion.js";
+import { initSound } from "./sound.js";
+import { initSystem } from "./system.js";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -81,11 +83,20 @@ async function boot() {
   const portraitEl = document.querySelector(".portrait");
   const portrait = portraitEl ? initPortrait(portraitEl, { reduced }) : null;
 
+  const refreshTheme = () => {
+    hero?.refreshColors();
+    visuals.refresh();
+    portrait?.refresh();
+  };
+
   initMotion({
     hero,
     reduced,
-    onTheme: () => { hero?.refreshColors(); visuals.refresh(); portrait?.refresh(); },
+    onTheme: refreshTheme,
   });
+
+  initSound({ onToast: toast });
+  initSystem({ onTheme: refreshTheme, onToast: toast });
 
   await loaderDone;
   document.body.classList.remove("is-loading");

@@ -116,7 +116,7 @@ export function initHero(canvas, { reduced = false } = {}) {
     const eased = 1 - Math.pow(1 - raw, 3); // easeOutCubic
     const lock = eased * (1 - scrollFade);
 
-    const R = W < 640 ? 70 : 120;
+    const R = W < 640 ? 95 : 120;
     const R2 = R * R;
     const push = 0.9 + Math.min(mouse.speed / 18, 2.2);
     mouse.speed *= 0.9;
@@ -213,22 +213,53 @@ export function initHero(canvas, { reduced = false } = {}) {
     cancelAnimationFrame(raf);
   }
 
-  /* ---- input ---- */
-  window.addEventListener(
-    "pointermove",
+  /* ---- input (desktop mouse + mobile finger slide) ---- */
+  let touchOnWord = false;
+  function moveAt(clientX, clientY) {
+    const r = canvas.getBoundingClientRect();
+    const x = clientX - r.left;
+    const y = clientY - r.top;
+    if (mouse.px > -9000) mouse.speed = Math.hypot(x - mouse.px, y - mouse.py);
+    else mouse.speed = 14; // immediate scatter impulse on first touch
+    mouse.px = mouse.x = x;
+    mouse.py = mouse.y = y;
+  }
+  function clearMouse() {
+    mouse.x = mouse.y = mouse.px = mouse.py = -9999;
+    touchOnWord = false;
+  }
+
+  window.addEventListener("pointerdown", (e) => moveAt(e.clientX, e.clientY), { passive: true });
+  window.addEventListener("pointermove", (e) => moveAt(e.clientX, e.clientY), { passive: true });
+  document.addEventListener("pointerleave", clearMouse);
+  window.addEventListener("pointerup", (e) => { if (e.pointerType === "mouse") return; clearMouse(); }, { passive: true });
+
+  // Touch events keep firing during finger slides even when mobile browsers cancel pointer events
+  canvas.addEventListener(
+    "touchstart",
     (e) => {
+      const t = e.touches[0];
+      if (!t) return;
       const r = canvas.getBoundingClientRect();
-      const x = e.clientX - r.left;
-      const y = e.clientY - r.top;
-      if (mouse.px > -9000) mouse.speed = Math.hypot(x - mouse.px, y - mouse.py);
-      mouse.px = mouse.x = x;
-      mouse.py = mouse.y = y;
+      const yRatio = (t.clientY - r.top) / Math.max(1, r.height);
+      // If touch begins on the PAULJI particle band, lock gesture so sliding in any direction scatters particles
+      touchOnWord = yRatio > 0.16 && yRatio < 0.56;
+      moveAt(t.clientX, t.clientY);
     },
     { passive: true }
   );
-  document.addEventListener("pointerleave", () => { mouse.x = mouse.y = -9999; });
-  window.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") mouse.x = mouse.y = -9999; }, { passive: true });
-  window.addEventListener("pointercancel", () => { mouse.x = mouse.y = -9999; }, { passive: true });
+  window.addEventListener(
+    "touchmove",
+    (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      if (touchOnWord && e.cancelable) e.preventDefault();
+      moveAt(t.clientX, t.clientY);
+    },
+    { passive: false }
+  );
+  window.addEventListener("touchend", clearMouse, { passive: true });
+  window.addEventListener("touchcancel", clearMouse, { passive: true });
 
   // Only animate while the hero is on screen.
   new IntersectionObserver(([entry]) => (entry.isIntersecting ? play() : pause())).observe(canvas);

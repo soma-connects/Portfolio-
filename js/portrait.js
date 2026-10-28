@@ -102,17 +102,44 @@ export function initPortrait(figure, { reduced = false } = {}) {
   const play = () => { if (!running) { running = true; raf = requestAnimationFrame(frame); } };
   const pause = () => { running = false; cancelAnimationFrame(raf); };
 
-  figure.addEventListener("pointermove", (e) => {
+  function moveLens(clientX, clientY) {
     const r = canvas.getBoundingClientRect();
-    lens.tx = ((e.clientX - r.left) / r.width) * w;
-    lens.ty = ((e.clientY - r.top) / r.height) * h;
+    lens.tx = ((clientX - r.left) / r.width) * w;
+    lens.ty = ((clientY - r.top) / r.height) * h;
     if (lens.r < 1) { lens.x = lens.tx; lens.y = lens.ty; }
     lens.tr = w * 0.26;
     if (reduced) { lens.x = lens.tx; lens.y = lens.ty; lens.r = lens.tr; draw(0); }
-  });
-  figure.addEventListener("pointerleave", () => { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } });
-  figure.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } } });
-  figure.addEventListener("pointercancel", () => { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } });
+  }
+  function closeLens() {
+    lens.tr = 0;
+    if (reduced) { lens.r = 0; draw(0); }
+  }
+
+  figure.addEventListener("pointerdown", (e) => moveLens(e.clientX, e.clientY), { passive: true });
+  figure.addEventListener("pointermove", (e) => moveLens(e.clientX, e.clientY), { passive: true });
+  figure.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") closeLens(); });
+
+  // Smooth torch drag on touch screens without page scroll hijacking the gesture
+  figure.addEventListener(
+    "touchstart",
+    (e) => {
+      const t = e.touches[0];
+      if (t) moveLens(t.clientX, t.clientY);
+    },
+    { passive: true }
+  );
+  figure.addEventListener(
+    "touchmove",
+    (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      if (e.cancelable) e.preventDefault();
+      moveLens(t.clientX, t.clientY);
+    },
+    { passive: false }
+  );
+  figure.addEventListener("touchend", closeLens, { passive: true });
+  figure.addEventListener("touchcancel", closeLens, { passive: true });
 
   if (!reduced) new IntersectionObserver(([e]) => (e.isIntersecting ? play() : pause())).observe(figure);
   new ResizeObserver(() => setup()).observe(canvas);

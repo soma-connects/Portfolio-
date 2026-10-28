@@ -254,6 +254,7 @@ em {
 .menu.is-open .menu__links a:nth-child(3) { transition-delay: 0.1s; }
 .menu.is-open .menu__links a:nth-child(4) { transition-delay: 0.15s; }
 .menu.is-open .menu__links a:nth-child(5) { transition-delay: 0.2s; }
+.menu.is-open .menu__links a:nth-child(6) { transition-delay: 0.25s; }
 .menu__foot { position: absolute; bottom: 28px; left: var(--gutter); color: var(--muted); }
 
 /* Toast (email copied, easter eggs) */

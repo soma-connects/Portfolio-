@@ -227,6 +227,8 @@ export function initHero(canvas, { reduced = false } = {}) {
     { passive: true }
   );
   document.addEventListener("pointerleave", () => { mouse.x = mouse.y = -9999; });
+  window.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") mouse.x = mouse.y = -9999; }, { passive: true });
+  window.addEventListener("pointercancel", () => { mouse.x = mouse.y = -9999; }, { passive: true });
 
   // Only animate while the hero is on screen.
   new IntersectionObserver(([entry]) => (entry.isIntersecting ? play() : pause())).observe(canvas);

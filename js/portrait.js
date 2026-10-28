@@ -111,6 +111,8 @@ export function initPortrait(figure, { reduced = false } = {}) {
     if (reduced) { lens.x = lens.tx; lens.y = lens.ty; lens.r = lens.tr; draw(0); }
   });
   figure.addEventListener("pointerleave", () => { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } });
+  figure.addEventListener("pointerup", (e) => { if (e.pointerType !== "mouse") { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } } });
+  figure.addEventListener("pointercancel", () => { lens.tr = 0; if (reduced) { lens.r = 0; draw(0); } });
 
   if (!reduced) new IntersectionObserver(([e]) => (e.isIntersecting ? play() : pause())).observe(figure);
   new ResizeObserver(() => setup()).observe(canvas);

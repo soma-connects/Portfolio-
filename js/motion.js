@@ -234,7 +234,7 @@ function initNavSpy() {
 }
 
 /* ---------- the scroll loop ---------- */
-function initScroll({ hero, reduced }) {
+function initScroll({ hero, reduced, onTheme }) {
   const bar = $(".progress");
   const manifesto = $(".manifesto");
   const words = manifesto ? (splitWords(manifesto, { mask: false }), $$(".w", manifesto)) : [];
@@ -245,9 +245,9 @@ function initScroll({ hero, reduced }) {
   measure();
   window.addEventListener("resize", measure);
 
-  let lastY = scrollY, velocity = 0, theme = "";
+  let lastY = scrollY, velocity = 0, theme = "", themeUntil = 0;
 
-  const tick = () => {
+  const tick = (now = performance.now()) => {
     // ---- READ: measure everything first ----
     const y = scrollY, vh = innerHeight;
     const max = document.documentElement.scrollHeight - vh;
@@ -272,7 +272,14 @@ function initScroll({ hero, reduced }) {
     // scene change: cream theme while the Stack section owns the middle of the screen
     if (sRect) {
       const next = sRect.top < vh * 0.5 && sRect.bottom > vh * 0.5 ? "light" : "dark";
-      if (next !== theme) { theme = next; document.body.dataset.theme = next; }
+      if (next !== theme) {
+        theme = next;
+        document.body.dataset.theme = next;
+        themeUntil = now + 950; // refresh canvas palettes across the 0.9s @property transition
+        onTheme?.();
+      } else if (now < themeUntil) {
+        onTheme?.();
+      }
     }
 
     // timeline fill + lit nodes
@@ -328,6 +335,6 @@ export function initMotion({ hero, reduced, onTheme }) {
   initCopy();
   initClock();
   initNavSpy();
-  initScroll({ hero, reduced });
+  initScroll({ hero, reduced, onTheme });
   initEggs(onTheme);
 }

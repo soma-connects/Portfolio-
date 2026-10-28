@@ -14,12 +14,15 @@ export const profile = {
   short: "Paulji",
   role: "Full-stack engineer",
   focus: ["AI pipelines", "Fintech rails", "On-chain automation"],
-  location: "Nigeria",
+  location: "Lagos & Port Harcourt, Nigeria",
   timezone: "Africa/Lagos", // WAT, UTC+1. Drives the live clock in the hero + footer
   email: "pauljizy@gmail.com",
+  phone: "+234 814 893 5054",
   github: "https://github.com/soma-connects",
   githubHandle: "soma-connects",
-  available: "Open to remote roles & contracts worldwide",
+  cv: "assets/Paulji-Peters-CV.pdf",
+  cvLaravel: "assets/Paulji-Peters-Laravel-CV.pdf",
+  available: "Open to remote & hybrid roles worldwide",
 };
 
 /* Numbers in the About section. Each one is computed, not guessed:
@@ -50,11 +53,11 @@ export const featured = [
     role: "Founder · Lead engineer",
     pitch: "Finds the sixty seconds worth posting inside a four-hour stream.",
     summary:
-      "An AI clipping SaaS for streamers who can't afford an editor. Transcribing a whole VOD costs too much, so a three-tier heuristic engine (chat-velocity spikes, audio peaks, on-screen OCR) flags candidate moments. Gemini then judges the hook and FFmpeg cuts the vertical clip.",
+      "An AI clipping SaaS for streamers who can't afford an editor. Transcribing a whole VOD costs too much, so a three-tier heuristic engine (chat-velocity spikes, audio peaks, on-screen OCR) flags candidate moments. Gemini Flash 1.5/2.0 scores virality, an AI aesthetics engine applies 'High-Value' or 'Stoic' visual grading, and FFmpeg cuts the vertical clip.",
     facts: [
       "A 500%+ jump in chat velocity marks the 60 seconds before it",
       "yt-dlp streams only flagged segments into FFmpeg, so the full VOD never touches disk",
-      "Dual-Box engine: facecam in the top third, gameplay in the bottom two-thirds of a 9:16 frame",
+      "Dual-Box 9:16 engine + AI aesthetics styles ('High-Value' & 'Stoic') across 61+ monorepo commits",
     ],
     stack: ["Next.js 15", "TypeScript", "Python", "Gemini", "FFmpeg", "yt-dlp", "Supabase", "pgvector", "Redis", "Modal", "Cloudflare R2", "Clerk"],
     live: "https://ncliper.vercel.app",
@@ -178,7 +181,8 @@ export const archive = [
   { name: "AlphaScale", year: 2026, cat: "ai web3", label: "AI · Trading", desc: "Reputation-verified SMC/ICT trading clips via FairScale", stack: "Next.js · Gemini · Solana", url: "https://github.com/soma-connects/AlphaScale", snippet: "clips.filter(c => fairscale(c.author) >= 80)" },
   { name: "Solana Security Lab", year: 2026, cat: "security web3", label: "Security · Rust", desc: "5 Anchor programs, each shipped vulnerable and fixed", stack: "Rust · Anchor · TS tests", url: "https://github.com/soma-connects/solana-security-lab", snippet: "- AccountInfo<'info>   + Signer<'info>" },
   { name: "SecureHub Admin", year: 2026, cat: "fullstack", label: "Dashboard", desc: "Ops dashboard + API for a laundry service", stack: "React · Express · Supabase · Zod", url: "https://secure-hub-admin-dashboard.vercel.app", snippet: "router.get('/orders', auth, validate(q), list)" },
-  { name: "EJ Blog", year: 2026, cat: "fullstack", label: "Content", desc: "Nuxt publishing platform with a rich-text editor", stack: "Nuxt · Vue · TipTap · Pinia", url: null, snippet: "editor.chain().focus().setImage({ src }).run()" },
+  { name: "EJ Blog", year: 2026, cat: "fullstack", label: "Content", desc: "Publishing platform with rich-text editor & workflows", stack: "Next.js · Nuxt · TipTap · TS", url: null, snippet: "editor.chain().focus().setImage({ src }).run()" },
+  { name: "Suggestion App", year: 2026, cat: "fullstack", label: "Community", desc: "Community feedback & feature-voting web platform", stack: "Next.js · TypeScript · Supabase", url: null, snippet: "await db.suggestions.upvote({ id, userId })" },
   { name: "Onelga Local Services", year: 2025, cat: "fullstack", label: "GovTech", desc: "Citizen services: ID letters, certificates, permits", stack: "React · Node · Flutter · AWS", url: "https://github.com/soma-connects/onelga-local-services", snippet: "POST /api/services/birth-certificate" },
   { name: "Techshop Secure API", year: 2025, cat: "security fullstack", label: "Security", desc: "Hardened auth service with a written threat model", stack: "Node · Express · Prisma · Argon2id", url: "https://github.com/soma-connects/Techshop", snippet: "rotateRefresh(token) // reuse ⇒ revoke family" },
   { name: "Tracking Security Service", year: 2025, cat: "security", label: "Python", desc: "Transport safety & tracking REST backend", stack: "Django · DRF · SimpleJWT", url: "https://github.com/soma-connects/tracking-security-service", snippet: "@ratelimit(key='ip', rate='10/m')" },
@@ -187,8 +191,8 @@ export const archive = [
   { name: "This portfolio", year: 2026, cat: "fullstack", label: "Meta", desc: "Hand-built, zero dependencies", stack: "HTML · CSS · JS · Canvas", url: "https://github.com/soma-connects/Portfolio-", snippet: "import { featured } from './data.js'" },
 ];
 
-/* Six repos exist but are still empty, so we count them without listing them. */
-export const incubating = 6;
+/* Five repos exist but are still empty, so we count them without listing them. */
+export const incubating = 5;
 
 export const archiveFilters = [
   { key: "all", label: "All" },
@@ -216,19 +220,19 @@ export const layers = [
   {
     name: "Logic",
     note: "Where the rules live",
-    tools: ["Laravel", "PHP 8", "Node / Express", "FastAPI", "Django REST", "Server Actions", "Zod"],
+    tools: ["Laravel", "PHP 8", "Eloquent ORM", "Laravel Sanctum", "Node / Express", "FastAPI", "Django REST", "Server Actions", "Zod"],
     uses: ["ND-Project2", "Hotel Web Service", "My Data Keep", "Techshop Secure API", "Tracking Security Service"],
   },
   {
     name: "Data",
     note: "What must never drift",
-    tools: ["PostgreSQL", "Supabase", "MySQL", "pgvector", "Prisma", "Redis", "Firestore"],
+    tools: ["PostgreSQL", "Supabase", "MySQL", "pgvector", "Prisma", "Redis", "Cloudflare R2", "Firestore"],
     uses: ["My Data Keep", "Ncliper", "Lezerv", "ND-Project2", "Voice Party Arcade"],
   },
   {
     name: "Intelligence",
     note: "Seeing, hearing, judging",
-    tools: ["Gemini", "MediaPipe Pose", "FFmpeg", "yt-dlp", "Speech-to-Text", "Pitch detection", "Modal GPU"],
+    tools: ["Gemini Flash 1.5/2.0", "Google Vertex AI", "TensorFlow", "MediaPipe Pose", "FFmpeg", "yt-dlp", "Speech-to-Text", "Modal GPU"],
     uses: ["Ncliper", "AlphaScale", "EFitMi", "Voice Party Arcade"],
   },
   {
@@ -240,8 +244,8 @@ export const layers = [
   {
     name: "Ship",
     note: "Getting it into the world",
-    tools: ["Vercel", "AWS", "Docker", "Cloud Run", "Fly.io", "GitHub Actions", "Jest / Vitest", "Playwright"],
-    uses: ["Ncliper", "My Data Keep", "Voice Party Arcade", "Techshop Secure API", "Lezerv"],
+    tools: ["Vercel", "Netlify", "AWS", "Docker", "Cloud Run", "GitHub Actions (CI/CD)", "Jest / Vitest", "Figma-to-code (MCP)"],
+    uses: ["Ncliper", "My Data Keep", "Voice Party Arcade", "SecureHub Admin", "Lezerv"],
   },
 ];
 

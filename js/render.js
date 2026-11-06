@@ -56,6 +56,7 @@ function renderFeatured() {
       const links = [
         `<button class="btn btn--solid magnetic" type="button" data-open="${p.id}" data-cursor="Open">Case study</button>`,
         p.live && `<a class="btn magnetic" href="${p.live}" target="_blank" rel="noopener" data-cursor="Visit">Live site ↗</a>`,
+        p.xray && `<button class="btn btn--xray magnetic" type="button" data-xray="${esc(p.id)}" data-cursor="X-Ray"><span class="btn__pulse" aria-hidden="true"></span>Architecture X-Ray</button>`,
         p.repo
           ? `<a class="btn magnetic" href="${p.repo}" target="_blank" rel="noopener" data-cursor="Code">Source ↗</a>`
           : `<span class="btn btn--ghost" title="This repository is private">Source · private</span>`,
@@ -64,7 +65,7 @@ function renderFeatured() {
         .join("");
 
       return `
-      <article class="project" id="${p.id}" aria-labelledby="${p.id}-title">
+      <article class="project" id="${p.id}" aria-labelledby="${p.id}-title" data-telemetry-node="SYS_${n}:${esc(p.id.toUpperCase())}">
         <div class="project__text">
           <div class="project__meta mono">
             <span class="project__idx">${n} / ${pad(featured.length)}</span>
@@ -93,7 +94,11 @@ function renderFeatured() {
             </div>
             <div class="figure__how">
               <canvas data-diagram="${p.visual}" role="img" aria-label="Animated diagram: ${esc(p.caption)}"></canvas>
-              <div class="figure__hud mono"><span class="figure__rec">Live figure</span><span>How it works</span></div>
+              <div class="figure__hud mono">
+                <span class="figure__rec">Live figure</span>
+                ${p.xray ? `<button class="figure__inspect mono" type="button" data-xray="${esc(p.id)}" data-cursor="Blueprint">[ Inspect blueprint ↗ ]</button>` : ""}
+                <span>How it works</span>
+              </div>
             </div>
           </div>
           <figcaption class="mono"><span>Fig. ${n}</span><span>${esc(p.caption)}</span></figcaption>

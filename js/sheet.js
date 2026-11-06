@@ -126,6 +126,11 @@ export function initSheet({ reduced = false } = {}) {
     document.documentElement.classList.remove("sheet-open");
   });
   dialog.addEventListener("cancel", (e) => { e.preventDefault(); close(); }); // Esc animates too
+  // Belt and braces: a dialog opened inside an async View Transition may not get a native
+  // "cancel" on Esc, so handle the key ourselves while the sheet is open.
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && dialog.open) { e.preventDefault(); close(); }
+  });
   dialog.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
   document.addEventListener("click", (e) => {
     const btn = e.target.closest("[data-open]");

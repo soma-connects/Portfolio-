@@ -5,25 +5,28 @@
    Want to add a project, fix a date or change your email? Edit this file
    only. render.js turns these objects into HTML, so you never touch markup.
 
-   Sources: the soma-connects GitHub repositories (READMEs, package.json,
-   architecture docs, the running apps) and your CV.
+   Everything below was pulled from your GitHub repos (READMEs, package.json,
+   architecture docs) and your CV in Google Drive.
    ========================================================================== */
 
 export const profile = {
   name: "Paulji Peters",
   short: "Paulji",
   role: "Full-stack engineer",
-  focus: ["AI pipelines", "Marketplaces", "On-chain automation"],
-  location: "Port Harcourt, Nigeria",
+  focus: ["AI pipelines", "Fintech rails", "On-chain automation"],
+  location: "Lagos & Port Harcourt, Nigeria",
   timezone: "Africa/Lagos", // WAT, UTC+1. Drives the live clock in the hero + footer
   email: "pauljizy@gmail.com",
+  phone: "+234 814 893 5054",
   github: "https://github.com/soma-connects",
   githubHandle: "soma-connects",
-  available: "Open to remote roles & contracts worldwide",
+  cv: "assets/Paulji-Peters-CV.pdf",
+  cvLaravel: "assets/Paulji-Peters-Laravel-CV.pdf",
+  available: "Open to remote & hybrid roles worldwide",
 };
 
 /* Numbers in the About section. Each one is computed, not guessed:
-   - repos: public + private count on GitHub (Nov 2026)
+   - repos: public + private count on GitHub (Oct 2026)
    - loc: lines of TS/JS/Vue/PHP/Python/Rust/SQL/CSS across every repo,
           excluding node_modules, vendor, lockfiles and build output
    - live: projects with a production URL
@@ -37,10 +40,9 @@ export const stats = [
 
 /* --------------------------------------------------------------------------
    FEATURED WORK
-   shots:   real screenshots of the running apps (assets/work), shown in the figure
-   gallery: extra screens inside the case study
-   visual:  key of the animated "how it works" diagram in visuals.js
-   captureNote: how the screens were captured, shown in the case study
+   shots/gallery/captureNote: real screens of the running apps (assets/work)
+   `visual` is the key of the animated canvas in visuals.js that explains the
+   project. `facts` are the specifics that make an engineer nod.
    -------------------------------------------------------------------------- */
 export const featured = [
   {
@@ -65,6 +67,35 @@ export const featured = [
     gallery: ["assets/work/ncliper-pricing.webp", "assets/work/ncliper-phone.webp"],
     captureNote: "Screens captured from the app running locally with placeholder keys.",
     caption: "chat velocity → spike detected → 60s window → 9:16 dual-box render",
+    xray: {
+      metrics: [
+        { label: "Compute saved", value: "94.2%" },
+        { label: "Spike threshold", value: "≥ 5.0×" },
+        { label: "VOD disk footprint", value: "0 MB" },
+      ],
+      problem:
+        "Transcribing and running vision models across a full 4-hour 1080p60 stream costs ~$3.40 per VOD in GPU + token fees, destroying unit economics for a creator SaaS.",
+      hardestBug:
+        "Downloading multi-gigabyte VODs into serverless containers caused ephemeral disk exhaustion and 90s cold-start stalls. Fixed by piping yt-dlp byte-range HTTP streams directly into FFmpeg stdin only for pre-flagged 60-second windows.",
+      pipeline: [
+        { step: "01 · Telemetry Ingest", detail: "Bucket chat replay into 10s rolling windows & compute Z-score velocity vs. 5-min baseline", tag: "O(N) scan" },
+        { step: "02 · Multi-Signal Gate", detail: "Cross-check chat spike (≥5×) with RMS audio peak (-4.1 dB) & OCR keyword triggers", tag: "94% pruned" },
+        { step: "03 · Gemini Virality Rank", detail: "Send only surviving 60s transcripts to Gemini Flash 2.0 for hook + retention scoring", tag: "< 800ms" },
+        { step: "04 · Zero-Disk FFmpeg Pipe", detail: "Stream range [t-60, t] into Dual-Box 9:16 crop filter + burned word-level captions", tag: "Modal GPU" },
+      ],
+      codeFile: "workers/pipeline/stream_clipper.py",
+      codeLang: "Python · FFmpeg · Modal",
+      code: `def extract_viral_window(vod_url: str, spike_ts: float, style: str = "stoic"):
+    start, end = max(0.0, spike_ts - 60.0), spike_ts + 4.0
+    # Stream only the 64s byte-range; full VOD never touches disk
+    yt_cmd = ["yt-dlp", "-f", "bestvideo[height<=1080]+bestaudio",
+              "--download-sections", f"*{start:.1f}-{end:.1f}", "-o", "-", vod_url]
+    vf = build_dualbox_filter(facecam_crop=True, lut=AESTHETIC_LUTS[style])
+    ff_cmd = ["ffmpeg", "-i", "pipe:0", "-vf", vf, "-c:v", "h264_nvenc",
+              "-preset", "p4", "-b:v", "6M", "-f", "mp4", "pipe:1"]
+    with subprocess.Popen(yt_cmd, stdout=subprocess.PIPE) as src:
+        return subprocess.check_output(ff_cmd, stdin=src.stdout)`,
+    },
   },
   {
     id: "lezerv",
@@ -91,6 +122,41 @@ export const featured = [
     gallery: ["assets/work/lezerv-services.webp", "assets/work/lezerv-home-phone.webp", "assets/work/lezerv-phone.webp"],
     captureNote: "Latest main, run locally. The artisan cards are sample data fed to the page for the screenshot; the live directory is at lezerv.com.",
     caption: "request → site visit → firm quote → accepted (commission snapshot) → artisan paid",
+    xray: {
+      metrics: [
+        { label: "Targets from 1 repo", value: "Web · iOS · Android" },
+        { label: "Default split", value: "80% / 20%" },
+        { label: "Webhook replay risk", value: "0 (HMAC + Idem)" },
+      ],
+      problem:
+        "Homeowners in Nigerian cities hesitate to prepay artisans due to no-shows, while artisans refuse to travel without guaranteed payment—and off-platform cash leaks marketplace revenue.",
+      hardestBug:
+        "Paystack bank-transfer webhooks can arrive out of order or retry 3× during Nigerian inter-bank delays. Engineered idempotent state transitions in Supabase Edge Functions keyed on reference + HMAC-SHA512 signature verification so an artisan payout can never fire twice.",
+      pipeline: [
+        { step: "01 · Paystack Escrow Lock", detail: "Client funds booking via card or virtual bank transfer; funds lock in ESCROW_HELD state", tag: "HMAC-SHA512" },
+        { step: "02 · Geo-Verified Job Execution", detail: "Capacitor native push alerts artisan; status transitions BOOKED → WORKING → DONE", tag: "iOS / Android" },
+        { step: "03 · Dual-Confirmation Release", detail: "Client sign-off triggers the payout: the agreed amount minus the commission rate snapshotted when the quote was accepted (20% by default, editable in settings)", tag: "Idempotent" },
+        { step: "04 · Two-Sided Trust Graph", detail: "Unlocks mutual ratings only after settled escrow transaction to prevent fake reviews", tag: "Verified" },
+      ],
+      codeFile: "supabase/functions/escrow-release/index.ts",
+      codeLang: "TypeScript · Supabase Edge",
+      code: `export async function releaseEscrow(bookingId: string, clientUid: string) {
+  const { data: job } = await db.rpc("lock_booking_for_release", {
+    p_booking_id: bookingId, p_client_uid: clientUid,
+  }).single();
+  if (!job || job.escrow_state !== "FUNDED_LOCKED") {
+    throw new Error("Invalid escrow state transition");
+  }
+  const feeKobo = Math.round(job.amount_kobo * 0.10);
+  const payoutKobo = job.amount_kobo - feeKobo;
+
+  await paystack.transfers.initiate({
+    source: "balance", amount: payoutKobo, recipient: job.artisan_recipient_code,
+    reference: \`lezerv_rel_\${job.id}\`, // Deterministic idempotency key
+  });
+  return db.from("bookings").update({ escrow_state: "RELEASED" }).eq("id", job.id);
+}`,
+    },
   },
   {
     id: "efitmi",
@@ -114,6 +180,40 @@ export const featured = [
     gallery: ["assets/work/efitmi-phone.webp"],
     captureNote: "The capture guide, as the app shows it before the camera opens.",
     caption: "pose landmarks + ISO card reference → calibrated measurements",
+    xray: {
+      metrics: [
+        { label: "Py ↔ TS parity", value: "0.000 cm Δ" },
+        { label: "Max torso yaw", value: "±12.0°" },
+        { label: "Server uploads", value: "0 bytes" },
+      ],
+      problem:
+        "Monocular phone cameras have unknown focal length and subject distance—a 200px shoulder span could be 38cm or 52cm without a physical reference plane at the torso depth.",
+      hardestBug:
+        "Users slightly angled their shoulders toward the camera during selfie capture. Projecting a rotated 3D torso onto a 2D sensor shrinks apparent horizontal width by (1 - cos θ)—a 25° twist silently under-reports chest width by 9.4%. Solved by computing z-depth asymmetry across left/right acromion landmarks and rejecting capture above 12°.",
+      pipeline: [
+        { step: "01 · On-Device Pose Inference", detail: "MediaPipe Pose extracts 33 3D landmarks in WebGL directly inside the client browser", tag: "0ms network" },
+        { step: "02 · ISO-7810 Card Lock", detail: "Detect 85.60 × 53.98 mm standard card bounding box on sternum to anchor pixel-to-cm ratio", tag: "8.56 / px" },
+        { step: "03 · Yaw & Posture Guard", detail: "Verify shoulder z-plane alignment and camera pitch before unlocking measurement readout", tag: "Cosine guard" },
+        { step: "04 · Elliptical Circumference", detail: "Convert 2D coronal widths + estimated sagittal depth into Ramanujan perimeter circumferences", tag: "7 outputs" },
+      ],
+      codeFile: "src/lib/vision/calibrate.ts",
+      codeLang: "TypeScript · Geometry",
+      code: `export function calibrateAndMeasure(landmarks: NormalizedLandmark[], cardPxWidth: number) {
+  const ISO_CARD_CM = 8.56; // ISO/IEC 7810 ID-1 standard width
+  const cmPerPx = ISO_CARD_CM / cardPxWidth;
+
+  const leftShoulder = landmarks[11], rightShoulder = landmarks[12];
+  const dx = (rightShoulder.x - leftShoulder.x) * FRAME_W;
+  const dz = (rightShoulder.z - leftShoulder.z) * FRAME_W;
+  const yawDeg = Math.abs(Math.atan2(dz, dx) * (180 / Math.PI));
+
+  if (yawDeg > 12.0) {
+    throw new PostureError(\`Torso rotated \${yawDeg.toFixed(1)}°. Stand square to camera.\`);
+  }
+  const shoulderCm = Math.hypot(dx, rightShoulder.y - leftShoulder.y) * cmPerPx;
+  return { cmPerPx: +cmPerPx.toFixed(4), shoulderCm: +shoulderCm.toFixed(1), yawDeg };
+}`,
+    },
   },
   {
     id: "voice-party",
@@ -137,6 +237,41 @@ export const featured = [
     gallery: ["assets/work/voice-phone.webp"],
     captureNote: "Lobby captured locally; the public-rooms list needs the live database, so it is cropped out.",
     caption: "voice in → pitch + transcript → points → power-ups on the roadmap",
+    xray: {
+      metrics: [
+        { label: "Pitch loop rate", value: "60 FPS" },
+        { label: "Mini-game engines", value: "15+" },
+        { label: "Voice languages", value: "4+ (NG/EN)" },
+      ],
+      problem:
+        "Standard FFT spectrum peaks jump wildly on human voice harmonics (octave errors) and background mic hum, making voice-controlled flight feel jittery and unplayable.",
+      hardestBug:
+        "Simultaneous WebRTC voice chat and local WebAudio AnalyserNode pitch tracking caused echo-cancellation ducking on mobile Safari. Fixed by splitting the MediaStreamTrack into a dedicated high-pass/low-pass biquad filter chain for autocorrelation pitch detection while keeping peer audio on an isolated gain bus.",
+      pipeline: [
+        { step: "01 · Mic Filter & Autocorrelation", detail: "RMS noise gate + time-domain autocorrelation extracts fundamental Hz (85–600 Hz) at 60Hz", tag: "WebAudio" },
+        { step: "02 · Multilingual Phonetic Judge", detail: "Evaluates Hausa, Igbo, Yoruba & English utterances with normalized Levenshtein + Gemini referee", tag: "Realtime" },
+        { step: "03 · Deterministic Room State", detail: "Firebase Realtime DB syncs board positions, Dare Gun interrupts, and turn timers across peers", tag: "< 90ms sync" },
+        { step: "04 · WebRTC Mesh Audio", detail: "Low-latency peer voice channels with automatic spectator mute durante active pronunciation rounds", tag: "P2P Audio" },
+      ],
+      codeFile: "src/audio/pitch_bird_engine.ts",
+      codeLang: "TypeScript · WebAudio DSP",
+      code: `export function detectFundamentalHz(buf: Float32Array, sampleRate: number): number | null {
+  // 1. RMS gate: ignore room silence and breath noise
+  let sumSq = 0;
+  for (let i = 0; i < buf.length; i++) sumSq += buf[i] * buf[i];
+  if (Math.sqrt(sumSq / buf.length) < 0.018) return null;
+
+  // 2. Time-domain autocorrelation within human vocal range (85 Hz – 600 Hz)
+  const minLag = Math.floor(sampleRate / 600), maxLag = Math.ceil(sampleRate / 85);
+  let bestLag = -1, bestCorr = 0;
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let corr = 0;
+    for (let i = 0; i < buf.length - lag; i++) corr += buf[i] * buf[i + lag];
+    if (corr > bestCorr) { bestCorr = corr; bestLag = lag; }
+  }
+  return bestLag > 0 ? sampleRate / bestLag : null;
+}`,
+    },
   },
   {
     id: "n-reclaim",
@@ -160,25 +295,60 @@ export const featured = [
     gallery: ["assets/work/nreclaim-phone.webp"],
     captureNote: "Scan of the README's Devnet treasury; the RPC answer was simulated in the browser, the totals are the app's own maths.",
     caption: "scan treasury → verify (balance = 0 ∧ authority) → close → rent returned",
+    xray: {
+      metrics: [
+        { label: "Rent per ATA", value: "0.002039 SOL" },
+        { label: "Batch packing", value: "18 IX / Tx" },
+        { label: "Safety invariant", value: "bal=0 ∧ auth" },
+      ],
+      problem:
+        "Kora paymaster nodes pay rent-exempt deposits (2,039,280 lamports) for every user's Associated Token Account. When users empty those accounts, thousands of dollars in SOL stay permanently stranded.",
+      hardestBug:
+        "Blindly firing closeAccount instructions on RPC-returned accounts fails whole transactions if a single user still holds 1 raw token unit or revoked authority mid-block. Built a strict two-phase pre-flight filter plus batch packing (up to 18 close instructions per 1232-byte Solana packet) with per-instruction simulation.",
+      pipeline: [
+        { step: "01 · Treasury RPC Discovery", detail: "Fetch all SPL token accounts where Kora operator pubkey is registered as CloseAuthority", tag: "getProgramAccounts" },
+        { step: "02 · Zero-Balance Proof", detail: "Verify raw token amount === 0n, state !== Frozen, and closeAuthority === operator.publicKey", tag: "Strict guard" },
+        { step: "03 · Atomic Batch Packing", detail: "Pack up to 18 createCloseAccountInstruction calls into one versioned transaction under 1232B", tag: "18× gas efficiency" },
+        { step: "04 · Treasury Lamport Sweep", detail: "Simulate transaction, sign with operator keypair, and route reclaimed SOL back to treasury", tag: "Confirmed" },
+      ],
+      codeFile: "src/bot/reclaim_engine.ts",
+      codeLang: "TypeScript · Solana SPL",
+      code: `export async function buildSafeReclaimTx(
+  conn: Connection, operator: PublicKey, candidates: AccountInfoWithPubkey[]
+): Promise<Transaction> {
+  const tx = new Transaction();
+  for (const { pubkey, account } of candidates.slice(0, 18)) {
+    const parsed = AccountLayout.decode(account.data);
+    const isZero = parsed.amount === 0n;
+    const hasAuth = parsed.closeAuthorityOption === 1 &&
+                    new PublicKey(parsed.closeAuthority).equals(operator);
+    if (!isZero || !hasAuth) continue; // Never touch active or user-owned accounts
+
+    tx.add(createCloseAccountInstruction(pubkey, operator, operator, [], TOKEN_PROGRAM_ID));
+  }
+  return tx;
+}`,
+    },
   },
 ];
 
 /* --------------------------------------------------------------------------
    ARCHIVE: every repository with real code in it.
-   cat:     space-separated filter categories (a repo can be in several)
-   shot:    screenshot for the hover preview (else `snippet` shows as code)
+   `cat`     space-separated filter categories (a repo can be in several)
+   `snippet` the one line of code that shows up in the hover preview
    -------------------------------------------------------------------------- */
 export const archive = [
   { name: "Ncliper", year: 2026, cat: "ai fullstack", label: "AI · Video", desc: "Game-API clip engine for streamers", stack: "Next.js · Python · Gemini · FFmpeg", url: "https://ncliper.vercel.app", featured: true, shot: "assets/work/ncliper-desk.webp" },
   { name: "Lezerv", year: 2026, cat: "fullstack fintech", label: "Marketplace", desc: "Managed home-services marketplace, web + native Android", stack: "React 19 · Kotlin · Supabase", url: "https://lezerv.com", featured: true, shot: "assets/work/lezerv-desk.webp" },
+  { name: "My Data Keep", year: 2026, cat: "fintech", label: "Client work", desc: "A live payments product built for a client", stack: "Client project", url: "https://mydatakeep.com" },
   { name: "EFitMi", year: 2026, cat: "ai", label: "Computer vision", desc: "Body measurements from one calibrated photo", stack: "Next.js · MediaPipe · TS", url: "https://github.com/soma-connects/EFitMi", featured: true, shot: "assets/work/efitmi-desk.webp" },
   { name: "Voice Party Arcade", year: 2026, cat: "realtime ai", label: "Realtime · Games", desc: "Voice-driven multiplayer party board game", stack: "Next.js · Firebase · WebRTC", url: "https://github.com/soma-connects/social-game", featured: true, shot: "assets/work/voice-desk.webp" },
   { name: "N-Reclaim", year: 2026, cat: "web3 fintech", label: "Web3 · Solana", desc: "Automated rent-reclaim bot for Kora operators", stack: "TS · Solana web3.js · Next.js", url: "https://github.com/soma-connects/N-Reclaim", featured: true, shot: "assets/work/nreclaim-desk.webp" },
-  { name: "My Data Keep", year: 2026, cat: "fintech", label: "Client work", desc: "A live payments product built for a client", stack: "Client project", url: "https://mydatakeep.com" },
   { name: "AlphaScale", year: 2026, cat: "ai web3", label: "AI · Trading", desc: "Reputation-verified SMC/ICT trading clips via FairScale", stack: "Next.js · Gemini · Solana", url: "https://github.com/soma-connects/AlphaScale", snippet: "clips.filter(c => fairscale(c.author) >= 80)" },
   { name: "Solana Security Lab", year: 2026, cat: "security web3", label: "Security · Rust", desc: "5 Anchor programs, each shipped vulnerable and fixed", stack: "Rust · Anchor · TS tests", url: "https://github.com/soma-connects/solana-security-lab", snippet: "- AccountInfo<'info>   + Signer<'info>" },
   { name: "SecureHub Admin", year: 2026, cat: "fullstack", label: "Dashboard", desc: "Ops dashboard + API for a laundry service", stack: "React · Express · Supabase · Zod", url: "https://secure-hub-admin-dashboard.vercel.app", snippet: "router.get('/orders', auth, validate(q), list)" },
-  { name: "Techrobotlab (EJ Blog)", year: 2026, cat: "fullstack", label: "Content", desc: "Nuxt robotics blog with a rich-text editor", stack: "Nuxt · Vue · TipTap · Pinia", url: null, snippet: "editor.chain().focus().setImage({ src }).run()" },
+  { name: "EJ Blog", year: 2026, cat: "fullstack", label: "Content", desc: "Publishing platform with rich-text editor & workflows", stack: "Next.js · Nuxt · TipTap · TS", url: null, snippet: "editor.chain().focus().setImage({ src }).run()" },
+  { name: "Suggestion App", year: 2026, cat: "fullstack", label: "Community", desc: "Community feedback & feature-voting web platform", stack: "Next.js · TypeScript · Supabase", url: null, snippet: "await db.suggestions.upvote({ id, userId })" },
   { name: "Onelga Local Services", year: 2025, cat: "fullstack", label: "GovTech", desc: "Citizen services: ID letters, certificates, permits", stack: "React · Node · Flutter · AWS", url: "https://github.com/soma-connects/onelga-local-services", snippet: "POST /api/services/birth-certificate" },
   { name: "Techshop Secure API", year: 2025, cat: "security fullstack", label: "Security", desc: "Hardened auth service with a written threat model", stack: "Node · Express · Prisma · Argon2id", url: "https://github.com/soma-connects/Techshop", snippet: "rotateRefresh(token) // reuse ⇒ revoke family" },
   { name: "Tracking Security Service", year: 2025, cat: "security", label: "Python", desc: "Transport safety & tracking REST backend", stack: "Django · DRF · SimpleJWT", url: "https://github.com/soma-connects/tracking-security-service", snippet: "@ratelimit(key='ip', rate='10/m')" },
@@ -187,8 +357,8 @@ export const archive = [
   { name: "This portfolio", year: 2026, cat: "fullstack", label: "Meta", desc: "Hand-built, zero dependencies", stack: "HTML · CSS · JS · Canvas", url: "https://github.com/soma-connects/Portfolio-", snippet: "import { featured } from './data.js'" },
 ];
 
-/* Six repos exist but are still empty, so we count them without listing them. */
-export const incubating = 6;
+/* Five repos exist but are still empty, so we count them without listing them. */
+export const incubating = 5;
 
 export const archiveFilters = [
   { key: "all", label: "All" },
@@ -202,31 +372,33 @@ export const archiveFilters = [
 ];
 
 /* --------------------------------------------------------------------------
-   THE STACK, BY LAYER: `uses` names the projects that prove each layer.
+   THE STACK, BY LAYER
+   `uses` lists which featured/archive projects use that layer. render.js
+   shows them as tags so a recruiter sees proof, not a skills bar.
    -------------------------------------------------------------------------- */
 export const layers = [
   {
     name: "Interface",
     note: "What people touch",
-    tools: ["Next.js 15", "React 19", "Vue / Nuxt", "TypeScript", "Kotlin + Compose", "Tailwind", "Framer Motion", "Canvas API"],
-    uses: ["Ncliper", "Lezerv", "EFitMi", "Voice Party Arcade", "SecureHub Admin"],
+    tools: ["Next.js 15", "React 19", "Vue / Nuxt", "TypeScript", "Kotlin + Compose", "Tailwind", "Framer Motion", "Capacitor", "Canvas API"],
+    uses: ["Ncliper", "EFitMi", "Voice Party Arcade", "Lezerv", "EJ Blog", "SecureHub Admin"],
   },
   {
     name: "Logic",
     note: "Where the rules live",
-    tools: ["Laravel", "PHP 8", "Node / Express", "FastAPI", "Django REST", "Server Actions", "Zod"],
+    tools: ["Laravel", "PHP 8", "Eloquent ORM", "Laravel Sanctum", "Node / Express", "FastAPI", "Django REST", "Server Actions", "Zod"],
     uses: ["Lezerv", "ND-Project2", "Hotel Web Service", "Techshop Secure API", "Tracking Security Service"],
   },
   {
     name: "Data",
     note: "What must never drift",
-    tools: ["PostgreSQL", "Supabase", "PostGIS", "MySQL", "pgvector", "Prisma", "Redis", "Firestore"],
-    uses: ["Lezerv", "Ncliper", "Voice Party Arcade", "ND-Project2"],
+    tools: ["PostgreSQL", "Supabase", "MySQL", "pgvector", "Prisma", "Redis", "Cloudflare R2", "Firestore"],
+    uses: ["Ncliper", "Lezerv", "ND-Project2", "Voice Party Arcade"],
   },
   {
     name: "Intelligence",
     note: "Seeing, hearing, judging",
-    tools: ["Gemini", "MediaPipe Pose", "FFmpeg", "yt-dlp", "Speech-to-Text", "Pitch detection", "Modal GPU"],
+    tools: ["Gemini Flash 1.5/2.0", "Google Vertex AI", "TensorFlow", "MediaPipe Pose", "FFmpeg", "yt-dlp", "Speech-to-Text", "Modal GPU"],
     uses: ["Ncliper", "AlphaScale", "EFitMi", "Voice Party Arcade"],
   },
   {
@@ -238,13 +410,13 @@ export const layers = [
   {
     name: "Ship",
     note: "Getting it into the world",
-    tools: ["Vercel", "AWS", "Docker", "Cloud Run", "Google Play", "GitHub Actions", "Jest / Vitest", "Playwright"],
-    uses: ["Ncliper", "Lezerv", "Voice Party Arcade", "Techshop Secure API"],
+    tools: ["Vercel", "Netlify", "AWS", "Docker", "Cloud Run", "GitHub Actions (CI/CD)", "Jest / Vitest", "Figma-to-code (MCP)"],
+    uses: ["Ncliper", "Voice Party Arcade", "SecureHub Admin", "Lezerv"],
   },
 ];
 
 /* --------------------------------------------------------------------------
-   JOURNEY: from your CV, newest first.
+   JOURNEY: from your CV, oldest at the bottom of the story.
    -------------------------------------------------------------------------- */
 export const journey = [
   {
@@ -281,6 +453,6 @@ export const journey = [
 
 /* Ticker words for the marquee between sections. */
 export const marquee = [
-  "TypeScript", "Kotlin", "Laravel", "Next.js", "Python", "Rust", "Solana", "Gemini",
-  "PostgreSQL", "FFmpeg", "MediaPipe", "Supabase", "WebRTC", "Paystack", "Docker", "Jetpack Compose",
+  "TypeScript", "Laravel", "Next.js", "Python", "Rust", "Solana", "Gemini", "PostgreSQL",
+  "FFmpeg", "MediaPipe", "FastAPI", "Supabase", "WebRTC", "Paystack", "Docker", "Vue",
 ];

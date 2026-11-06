@@ -36,10 +36,11 @@
     "name": "Paulji Peters",
     "jobTitle": "Full-stack engineer",
     "email": "mailto:pauljizy@gmail.com",
-    "address": { "@type": "PostalAddress", "addressLocality": "Port Harcourt", "addressCountry": "NG" },
+    "telephone": "+234-814-893-5054",
+    "address": { "@type": "PostalAddress", "addressLocality": "Lagos & Port Harcourt", "addressCountry": "NG" },
     "alumniOf": "Michael Okpara University of Agriculture, Umudike",
     "sameAs": ["https://github.com/soma-connects"],
-    "knowsAbout": ["Laravel", "Next.js", "TypeScript", "Python", "Solana", "Generative AI", "Fintech"]
+    "knowsAbout": ["Laravel", "Next.js", "TypeScript", "Python", "Solana", "Generative AI", "Google Vertex AI", "Fintech"]
   }
   </script>
 </head>
@@ -78,8 +79,22 @@
       <a href="#stack" data-nav="stack">Stack</a>
       <a href="#journey" data-nav="journey">Journey</a>
       <a href="#contact" data-nav="contact">Contact</a>
+      <a href="showcase.html" data-cursor="Flyer">Services &amp; Card ↗</a>
+      <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener" data-cursor="PDF">CV ↓</a>
     </nav>
-    <div class="nav__status mono"><span class="live-dot"></span><span>Available</span></div>
+    <div class="nav__tools mono">
+      <button class="nav__pill" type="button" data-sound-toggle aria-pressed="false" data-cursor="Audio" title="Toggle WebAudio signal sonification">
+        <span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span data-sound-label>Sound · Off</span>
+      </button>
+      <button class="nav__pill" type="button" data-xray-mode-toggle aria-pressed="false" data-cursor="Telemetry" title="Toggle Telemetry X-Ray HUD (Shift+X)">
+        <span>X-Ray</span>
+      </button>
+      <button class="nav__pill nav__pill--cmd" type="button" data-cmd-open data-cursor="Terminal" title="Open Signal Command Palette (⌘K or /)">
+        <span>⌘K</span>
+      </button>
+      <div class="nav__status"><span class="live-dot"></span><span class="hide-md">Available</span></div>
+    </div>
     <button class="nav__menu mono" aria-expanded="false" aria-controls="menu">Menu</button>
   </header>
 
@@ -90,8 +105,15 @@
       <a href="#stack"><span class="mono">03</span>Stack</a>
       <a href="#journey"><span class="mono">04</span>Journey</a>
       <a href="#contact"><span class="mono">05</span>Contact</a>
+      <a href="showcase.html"><span class="mono">06</span>Services &amp; Flyer ↗</a>
+      <a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener"><span class="mono">07</span>Resume / CV ↓</a>
     </nav>
-    <p class="menu__foot mono">pauljizy@gmail.com</p>
+    <div class="menu__tools mono">
+      <button class="nav__pill" type="button" data-cmd-open>⌘K Terminal</button>
+      <button class="nav__pill" type="button" data-sound-toggle aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span data-sound-label>Sound · Off</span></button>
+      <button class="nav__pill" type="button" data-xray-mode-toggle aria-pressed="false">Telemetry X-Ray</button>
+    </div>
+    <p class="menu__foot mono">pauljizy@gmail.com · +234 814 893 5054</p>
   </div>
 
   <main id="main">
@@ -134,7 +156,7 @@
         <figure class="portrait reveal" data-cursor-off>
           <canvas class="portrait__canvas" aria-hidden="true"></canvas>
           <img class="portrait__img" src="assets/portrait.jpg" alt="Portrait of Paulji Peters" width="460" height="460" loading="lazy" />
-          <figcaption class="mono">Fig. 00: the engineer. Hover to bring into focus.</figcaption>
+          <figcaption class="mono">Fig. 00: the engineer. Hover or drag to bring into focus.</figcaption>
         </figure>
 
         <div class="about__text">
@@ -203,11 +225,15 @@
       <div class="contact__row">
         <a class="contact__email magnetic" href="mailto:pauljizy@gmail.com" data-cursor="Write">pauljizy@gmail.com</a>
         <button class="contact__copy mono magnetic" type="button" data-copy="pauljizy@gmail.com" data-cursor="Copy">Copy email</button>
+        <a class="contact__copy mono magnetic" href="showcase.html" data-cursor="View">Services &amp; Showcase Flyer ↗</a>
+        <a class="contact__copy mono magnetic" href="assets/Paulji-Peters-CV.pdf" download="Paulji_Peters_CV.pdf" data-cursor="Download">Download CV ↓</a>
       </div>
       <ul class="contact__links mono">
         <li><a href="https://github.com/soma-connects" target="_blank" rel="noopener" data-cursor="Open">GitHub ↗</a></li>
-        <li><a href="mailto:pauljizy@gmail.com" data-cursor="Write">Email ↗</a></li>
-        <li><span class="live-dot"></span> Open to remote roles &amp; contracts worldwide</li>
+        <li><a href="assets/Paulji-Peters-CV.pdf" target="_blank" rel="noopener" data-cursor="PDF">Full-Stack &amp; AI CV ↗</a></li>
+        <li><a href="assets/Paulji-Peters-Laravel-CV.pdf" target="_blank" rel="noopener" data-cursor="PDF">Laravel &amp; Backend CV ↗</a></li>
+        <li><a href="tel:+2348148935054" data-cursor="Call">+234 814 893 5054 ↗</a></li>
+        <li><span class="live-dot"></span> Lagos &amp; Port Harcourt, Nigeria · Open to remote &amp; hybrid roles worldwide</li>
       </ul>
     </section>
   </main>
@@ -225,6 +251,58 @@
 
   <!-- Case-study sheet, filled by sheet.js -->
   <dialog class="sheet" id="sheet" aria-labelledby="sheet-title"></dialog>
+
+  <!-- ==================== ARCHITECTURE X-RAY DRAWER (#2) ==================== -->
+  <aside class="xray" id="xray-drawer" role="dialog" aria-modal="true" aria-labelledby="xray-title" aria-hidden="true">
+    <div class="xray__backdrop"></div>
+    <div class="xray__panel">
+      <header class="xray__head">
+        <div class="xray__top mono">
+          <span class="xray__top-title" id="xray-title">BLUEPRINT // ARCHITECTURE X-RAY</span>
+          <button class="xray__close mono" type="button" data-xray-close>[ ESC · Close ]</button>
+        </div>
+        <div class="xray__tabs" role="tablist" aria-label="Select featured system"></div>
+      </header>
+      <div class="xray__body"></div>
+    </div>
+  </aside>
+
+  <!-- ================ COMMAND PALETTE + SIGNAL TERMINAL (#3) ================ -->
+  <div class="cmd" id="cmd-palette" role="dialog" aria-modal="true" aria-label="Signal Command Palette and Terminal" aria-hidden="true">
+    <div class="cmd__backdrop"></div>
+    <div class="cmd__box">
+      <div class="cmd__bar">
+        <span class="cmd__prompt mono">&gt;_</span>
+        <input class="cmd__input" type="text" placeholder="Type a command, jump to a system, or ask a question (e.g. 'ask fintech' or 'solana')…" autocomplete="off" spellcheck="false" />
+        <button class="cmd__esc mono" type="button" data-cmd-close>ESC</button>
+      </div>
+      <div class="cmd__answer" hidden></div>
+      <ul class="cmd__list" role="listbox" aria-label="Commands"></ul>
+      <footer class="cmd__foot mono">
+        <span><kbd>↑</kbd><kbd>↓</kbd> Navigate</span>
+        <span><kbd>↵</kbd> Execute / Ask</span>
+        <span><kbd>Shift</kbd>+<kbd>X</kbd> Telemetry X-Ray</span>
+        <span><kbd>?</kbd> Ask Signal AI</span>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= TELEMETRY X-RAY HUD OVERLAY (#3) ================= -->
+  <aside class="tel mono" id="telemetry-hud" aria-hidden="true">
+    <div class="tel__head">
+      <span><i class="live-dot"></i> TELEMETRY X-RAY</span>
+      <button class="tel__close mono" type="button" data-xray-mode-toggle>[ × ]</button>
+    </div>
+    <canvas class="tel__spark" width="180" height="34" aria-hidden="true"></canvas>
+    <dl class="tel__grid">
+      <div><dt>FRAME RATE</dt><dd data-tel-fps>60 FPS</dd></div>
+      <div><dt>FRAME BUDGET</dt><dd data-tel-ms>16.6 ms</dd></div>
+      <div><dt>SCROLL POS</dt><dd data-tel-scroll>0px (0%)</dd></div>
+      <div><dt>DOM TREE</dt><dd data-tel-dom>-- nodes</dd></div>
+      <div><dt>VIEWPORT</dt><dd data-tel-vp>--</dd></div>
+      <div><dt>DEPENDENCIES</dt><dd>0 · Vanilla</dd></div>
+    </dl>
+  </aside>
 
   <div class="toast mono" role="status" aria-live="polite"></div>
 

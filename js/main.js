@@ -13,7 +13,9 @@ import { renderAll } from "./render.js";
 import { initHero } from "./hero.js";
 import { initVisuals } from "./visuals.js";
 import { initPortrait } from "./portrait.js";
-import { initMotion } from "./motion.js";
+import { initMotion, toast } from "./motion.js";
+import { initSound } from "./sound.js";
+import { initSystem } from "./system.js";
 import { initSheet, initFigures } from "./sheet.js";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -32,7 +34,7 @@ function runLoader() {
   const canvas = loader.querySelector(".loader__wave");
   const ctx = canvas.getContext("2d");
   const dpr = Math.min(devicePixelRatio || 1, 2);
-  const W = canvas.clientWidth, H = canvas.clientHeight;
+  const W = canvas.clientWidth || 320, H = canvas.clientHeight || 64;
   canvas.width = W * dpr; canvas.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const DUR = 1500;
@@ -82,12 +84,20 @@ async function boot() {
   const portraitEl = document.querySelector(".portrait");
   const portrait = portraitEl ? initPortrait(portraitEl, { reduced }) : null;
 
+  const refreshTheme = () => {
+    hero?.refreshColors();
+    visuals.refresh();
+    portrait?.refresh();
+  };
+
   initMotion({
     hero,
     reduced,
-    onTheme: () => { hero?.refreshColors(); visuals.refresh(); portrait?.refresh(); },
+    onTheme: refreshTheme,
   });
 
+  initSound({ onToast: toast });
+  initSystem({ onTheme: refreshTheme, onToast: toast });
   initFigures({ reduced });
   initSheet({ reduced });
 

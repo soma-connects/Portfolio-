@@ -124,7 +124,7 @@ export const featured = [
     caption: "request → site visit → firm quote → accepted (commission snapshot) → artisan paid",
     xray: {
       metrics: [
-        { label: "Targets from 1 repo", value: "Web · iOS · Android" },
+        { label: "Clients", value: "Web + native Android" },
         { label: "Default split", value: "80% / 20%" },
         { label: "Webhook replay risk", value: "0 (HMAC + Idem)" },
       ],
@@ -134,28 +134,37 @@ export const featured = [
         "Paystack bank-transfer webhooks can arrive out of order or retry 3× during Nigerian inter-bank delays. Engineered idempotent state transitions in Supabase Edge Functions keyed on reference + HMAC-SHA512 signature verification so an artisan payout can never fire twice.",
       pipeline: [
         { step: "01 · Paystack Escrow Lock", detail: "Client funds booking via card or virtual bank transfer; funds lock in ESCROW_HELD state", tag: "HMAC-SHA512" },
-        { step: "02 · Geo-Verified Job Execution", detail: "Capacitor native push alerts artisan; status transitions BOOKED → WORKING → DONE", tag: "iOS / Android" },
+        { step: "02 · Geo-Verified Job Execution", detail: "Firebase push alerts the artisan; the job moves from accepted to in progress to completed", tag: "Kotlin + web" },
         { step: "03 · Dual-Confirmation Release", detail: "Client sign-off triggers the payout: the agreed amount minus the commission rate snapshotted when the quote was accepted (20% by default, editable in settings)", tag: "Idempotent" },
         { step: "04 · Two-Sided Trust Graph", detail: "Unlocks mutual ratings only after settled escrow transaction to prevent fake reviews", tag: "Verified" },
       ],
-      codeFile: "supabase/functions/escrow-release/index.ts",
-      codeLang: "TypeScript · Supabase Edge",
-      code: `export async function releaseEscrow(bookingId: string, clientUid: string) {
-  const { data: job } = await db.rpc("lock_booking_for_release", {
-    p_booking_id: bookingId, p_client_uid: clientUid,
-  }).single();
-  if (!job || job.escrow_state !== "FUNDED_LOCKED") {
-    throw new Error("Invalid escrow state transition");
-  }
-  const feeKobo = Math.round(job.amount_kobo * 0.10);
-  const payoutKobo = job.amount_kobo - feeKobo;
-
-  await paystack.transfers.initiate({
-    source: "balance", amount: payoutKobo, recipient: job.artisan_recipient_code,
-    reference: \`lezerv_rel_\${job.id}\`, // Deterministic idempotency key
-  });
-  return db.from("bookings").update({ escrow_state: "RELEASED" }).eq("id", job.id);
-}`,
+      codeFile: "supabase/migrations/0033_security_hotfix.sql (excerpt)",
+      codeLang: "PostgreSQL · Supabase",
+      code: `create or replace function public.release_escrow(p_job_id uuid)
+returns public.payments language plpgsql security definer as $$
+declare
+  v_uid uuid := auth.uid();
+  v_job public.service_jobs%rowtype;
+  v_payment public.payments%rowtype;
+begin
+  if v_uid is null then raise exception 'sign in to release a payment'; end if;
+  select * into v_job from public.service_jobs where id = p_job_id for update;
+  if v_job.client_id is distinct from v_uid and not public.is_admin() then
+    raise exception 'only the client or admin can release escrow for this job';
+  end if;
+  if v_job.status is distinct from 'completed' then
+    raise exception 'payment is released only once the job is completed';
+  end if;
+  select * into v_payment from public.payments
+   where job_id = p_job_id and status = 'held'
+   order by created_at desc limit 1 for update;
+  update public.payments set status = 'released', updated_at = now()
+   where id = v_payment.id returning * into v_payment;
+  insert into public.payment_events (payment_id, paystack_reference, event_type, payload)
+  values (v_payment.id, v_payment.paystack_reference, 'escrow.released',
+          jsonb_build_object('released_by', v_uid, 'job_id', p_job_id));
+  return v_payment;
+end $$;`,
     },
   },
   {

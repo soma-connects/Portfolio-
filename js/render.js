@@ -8,7 +8,7 @@
    ========================================================================== */
 import { profile, stats, featured, archive, archiveFilters, incubating, layers, journey, marquee } from "./data.js";
 
-const esc = (s) =>
+export const esc = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -54,7 +54,8 @@ function renderFeatured() {
         .map((word) => `<span class="wd">${[...word].map((ch) => `<span class="ch" style="--i:${j++}">${esc(ch)}</span>`).join("")}</span>`)
         .join(" ");
       const links = [
-        p.live && `<a class="btn btn--solid magnetic" href="${p.live}" target="_blank" rel="noopener" data-cursor="Visit">Live site ↗</a>`,
+        `<button class="btn btn--solid magnetic" type="button" data-open="${p.id}" data-cursor="Open">Case study</button>`,
+        p.live && `<a class="btn magnetic" href="${p.live}" target="_blank" rel="noopener" data-cursor="Visit">Live site ↗</a>`,
         p.repo
           ? `<a class="btn magnetic" href="${p.repo}" target="_blank" rel="noopener" data-cursor="Code">Source ↗</a>`
           : `<span class="btn btn--ghost" title="This repository is private">Source · private</span>`,
@@ -73,14 +74,27 @@ function renderFeatured() {
           <h3 class="project__title" id="${p.id}-title" aria-label="${esc(p.name)}">${title}</h3>
           <p class="project__pitch">${esc(p.pitch)}</p>
           <p class="project__summary">${esc(p.summary)}</p>
-          <ul class="project__facts">${p.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+          <ul class="project__facts">${p.facts.slice(0, 3).map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
           <ul class="chips" aria-label="Tech stack">${p.stack.map((s) => `<li class="chip">${esc(s)}</li>`).join("")}</ul>
           <div class="project__links">${links}</div>
         </div>
-        <figure class="figure">
+        <figure class="figure" data-view="screens">
+          <div class="figure__tabs mono" role="group" aria-label="${esc(p.name)} figure">
+            <button type="button" data-view="screens" aria-pressed="true">Screens</button>
+            <button type="button" data-view="how" aria-pressed="false">How it works</button>
+            <span class="figure__role">${esc(p.role)}</span>
+          </div>
           <div class="figure__frame">
-            <canvas data-visual="${p.visual}" role="img" aria-label="Animated diagram: ${esc(p.caption)}"></canvas>
-            <div class="figure__hud mono"><span class="figure__rec">Live figure</span><span>${esc(p.role)}</span></div>
+            <div class="figure__screens">
+              <button class="figure__shot" type="button" data-open="${p.id}" data-cursor="Open" aria-label="Open the ${esc(p.name)} case study">
+                <img src="${p.shots.desk}" alt="${esc(p.name)}, real screen" loading="lazy" width="1280" height="800" data-shot="${p.id}" />
+              </button>
+              ${p.shots.phone ? `<img class="figure__phone" src="${p.shots.phone}" alt="${esc(p.name)} on a phone" loading="lazy" width="640" height="1280" />` : ""}
+            </div>
+            <div class="figure__how">
+              <canvas data-diagram="${p.visual}" role="img" aria-label="Animated diagram: ${esc(p.caption)}"></canvas>
+              <div class="figure__hud mono"><span class="figure__rec">Live figure</span><span>How it works</span></div>
+            </div>
           </div>
           <figcaption class="mono"><span>Fig. ${n}</span><span>${esc(p.caption)}</span></figcaption>
         </figure>
@@ -109,7 +123,13 @@ function renderArchive() {
         <span class="row__label mono">${esc(a.label)}</span>
         ${a.url ? '<span class="row__arrow" aria-hidden="true">↗</span>' : '<span class="row__private">Private</span>'}`;
       // data-* attributes feed the floating code preview in motion.js
-      const data = `data-snippet="${esc(a.snippet)}" data-stack="${esc(a.stack)}" data-file="${esc(fileName(a))}"`;
+      const file = a.shot && a.url ? a.url.replace(/^https?:\/\//, "").replace(/\/$/, "") : fileName(a);
+      const data = [
+        a.shot && `data-shot="${a.shot}"`,
+        a.snippet && `data-snippet="${esc(a.snippet)}"`,
+        `data-stack="${esc(a.stack)}"`,
+        `data-file="${esc(file)}"`,
+      ].filter(Boolean).join(" ");
       return `
       <li class="row" data-cat="${a.cat}">
         ${

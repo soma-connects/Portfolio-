@@ -149,7 +149,7 @@ function initArchive() {
 
   const preview = $(".preview");
   if (!preview || !matchMedia("(pointer: fine)").matches) return;
-  const code = $(".preview__code"), file = $(".preview__file"), meta = $(".preview__meta");
+  const code = $(".preview__code"), file = $(".preview__file"), meta = $(".preview__meta"), img = $(".preview__img");
   let on = false, x = 0, y = 0, tx = 0, ty = 0, raf = 0;
   const esc = (s) => s.replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
   const hl = (s) => esc(s).replace(/\b(if|const|await|return|import|from|max|pub|let|async|def)\b/g, '<span class="k">$1</span>');
@@ -162,7 +162,11 @@ function initArchive() {
   list.addEventListener("pointerover", (e) => {
     const link = e.target.closest(".row__link");
     if (!link) return;
-    code.innerHTML = hl(link.dataset.snippet || "");
+    const { shot, snippet } = link.dataset;
+    if (!shot && !snippet) { on = false; preview.classList.remove("is-on"); return; }
+    preview.classList.toggle("has-shot", !!shot);
+    if (shot) img.src = shot;
+    code.innerHTML = hl(snippet || "");
     file.textContent = link.dataset.file || "";
     meta.textContent = link.dataset.stack || "";
     if (!on) { on = true; preview.classList.add("is-on"); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop); }

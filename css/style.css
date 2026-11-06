@@ -634,3 +634,71 @@ body:not(.is-loading) .hero__hint { opacity: 0.8; }
   *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; transition-delay: 0s !important; }
   .js .reveal, .js .row, .js .project__text > * { opacity: 1 !important; transform: none !important; }
 }
+
+/* ---------- 7. REAL SCREENS + CASE STUDIES ----------
+   Each figure has two views of one frame: the app's real screens (default)
+   and the live "how it works" diagram. The case-study sheet is a <dialog>. */
+.figure__tabs { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; color: var(--muted); }
+.figure__tabs button {
+  font: inherit; letter-spacing: inherit; text-transform: inherit;
+  border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; color: var(--fg-2);
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+.figure__tabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.figure__role { margin-left: auto; font-size: 0.62rem; }
+.figure__screens, .figure__how { position: absolute; inset: 0; transition: opacity 0.5s var(--ease-out); }
+.figure__how { opacity: 0; pointer-events: none; }
+.figure[data-view="how"] .figure__how { opacity: 1; pointer-events: auto; }
+.figure[data-view="how"] .figure__screens { opacity: 0; pointer-events: none; }
+.figure__shot { display: block; width: 100%; height: 100%; padding: 0; }
+.figure__shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; transition: transform 0.8s var(--ease-out); }
+.figure__shot:hover img { transform: scale(1.025); }
+.figure__phone {
+  position: absolute; right: 4%; bottom: 5%; width: 23%; height: auto; aspect-ratio: 1 / 2; object-fit: cover; object-position: top;
+  border-radius: 14px; border: 1px solid rgba(242, 237, 228, 0.25); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+.js .figure__frame img { transform: scale(1.12); transition: transform 1.6s var(--ease-out); }
+.js .project.is-in .figure__frame img { transform: none; }
+.js .project.is-in .figure__phone { transition-delay: 0.25s; }
+
+/* Archive preview: a real screen when the project has one */
+.preview__img { display: none; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; }
+.preview.has-shot .preview__img { display: block; }
+.preview.has-shot .preview__code { display: none; }
+
+/* Case-study sheet */
+html.sheet-open { overflow: hidden; }
+.sheet {
+  width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0;
+  background: var(--bg); color: var(--fg); overflow-y: auto; overscroll-behavior: contain;
+}
+.sheet::backdrop { background: rgba(8, 8, 10, 0.7); }
+.sheet__bar {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 18px;
+  padding: 14px var(--gutter); background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--line);
+}
+.sheet__crumb { color: var(--signal); }
+.sheet__name { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+.sheet__close { margin-left: auto; }
+.sheet__body { padding: clamp(28px, 4vw, 56px) var(--gutter) 96px; display: grid; gap: clamp(40px, 5vw, 72px); }
+.sheet__frame { border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: var(--bg-2); }
+.sheet__frame img { width: 100%; height: auto; display: block; }
+.sheet__hero { max-height: 78vh; }
+.sheet__hero img { height: 100%; object-fit: cover; object-position: top; }
+.sheet__intro { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(28px, 5vw, 80px); }
+.sheet__meta, .sheet__label { color: var(--muted); margin-bottom: 18px; }
+.sheet__pitch { font-family: var(--font-serif); font-style: italic; font-size: clamp(1.7rem, 3vw, 2.6rem); line-height: 1.12; margin-bottom: 20px; }
+.sheet__summary { color: var(--fg-2); margin-bottom: 28px; max-width: 60ch; }
+.sheet__screen { aspect-ratio: 16 / 10; }
+.sheet__gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 18px; align-items: start; }
+.sheet__frame.is-phone { max-width: 300px; }
+.sheet__note { color: var(--muted); }
+::view-transition-old(shot), ::view-transition-new(shot) { animation-duration: 0.55s; animation-timing-function: var(--ease-out); height: 100%; object-fit: cover; }
+
+@media (max-width: 900px) {
+  .sheet__intro { grid-template-columns: minmax(0, 1fr); }
+  .figure__phone { width: 28%; }
+}
+/* Inside a case study there is no scroll reveal: show the diagram frame as-is */
+.js .sheet .figure__frame { clip-path: none; }
+.js .sheet .figure__frame canvas { transform: none; }

@@ -79,7 +79,7 @@ function makeKit(ctx, w, h, pal) {
 }
 
 /* =========================================================================
-   FIG 01 · NCLIPER
+   NCLIPER
    chat velocity → spike over 5× baseline → 60s window → 9:16 dual-box render
    ========================================================================= */
 const ncliper = {
@@ -249,107 +249,7 @@ const ncliper = {
 };
 
 /* =========================================================================
-   FIG 02 · MY DATA KEEP
-   available = max(0, tier% × lifetime profit − active debt)
-   ========================================================================= */
-const datakeep = {
-  loop: 11,
-  still: 9.6,
-  draw(ctx, w, h, t, pal, k) {
-    const p = w * 0.06;
-    const narrow = w < 520;
-    const top = h * 0.26, bot = h * 0.66, colH = bot - top;
-    const profits = [180, 220, 150, 260, 240, 200, 310, 190, 280, 230, 260, 220, 300, 250, 270, 210, 290, 240, 260, 240]; // ₦4,800 total
-    const buyAt = (i) => 0.3 + i * 0.24;
-    let n = 0;
-    while (n < profits.length && t >= buyAt(n)) n++;
-    const profit = profits.slice(0, n).reduce((a, b) => a + b, 0);
-    const tier = n >= 20 ? 2 : n >= 8 ? 1 : n >= 3 ? 0 : -1;
-    const pct = [0.2, 0.25, 0.3][tier] || 0;
-    const limit = pct * profit;
-    const debt = 600 * eo(seg(t, 5.9, 6.6)) * (1 - eio(seg(t, 7.6, 8.7)));
-    const avail = Math.max(0, limit - debt);
-
-    // --- column A: lifetime profit ---
-    const ax = p, aw = w * 0.17;
-    k.text("LIFETIME PROFIT", ax, top - k.fs * 1.3);
-    k.box(ax, top, aw, colH, 6, { stroke: pal.muted, alpha: 0.5 });
-    const fillH = (profit / 5000) * colH;
-    k.box(ax + 3, bot - fillH, aw - 6, Math.max(0, fillH - 3), 4, { fill: pal.fg, alpha: 0.16 });
-    if (fillH > 4) k.line(ax + 3, bot - fillH, ax + aw - 3, bot - fillH, pal.fg, 2);
-    for (let i = 0; i < n; i++) {
-      const life = seg(t, buyAt(i), buyAt(i) + 0.5);
-      if (life >= 1) continue;
-      const level = (profits.slice(0, i).reduce((a, b) => a + b, 0) / 5000) * colH;
-      const yy = lerp(top - 20, bot - level - 8, eio(life));
-      k.box(ax + aw / 2 - 4, yy, 8, 8, 2, { fill: pal.signal, alpha: 1 - life * 0.5 });
-      k.text(`+${naira(profits[i])}`, ax + aw + 8, yy + 8, { color: pal.signal, alpha: 1 - life, size: k.fs * 0.9 });
-    }
-    k.text(naira(profit), ax, bot + k.fs * 2.4, { sans: true, size: k.fs * 1.9, weight: 500, color: pal.fg });
-    k.text(`${n} PURCHASES`, ax, bot + k.fs * 4);
-
-    // --- column B: trust tiers ---
-    const bx = w * 0.35, bwid = w * 0.3;
-    k.text("TRUST TIER", bx, top - k.fs * 1.3);
-    const tiers = [
-      ["GOLD", "≥20 BUYS · ≥45D · ≥80", "30%"],
-      ["SILVER", "≥8 BUYS · ≥21D · ≥55", "25%"],
-      ["BRONZE", "≥3 BUYS · ≥7D · ≥30", "20%"],
-    ];
-    const rh = (colH - 16) / 3;
-    tiers.forEach((tr, j) => {
-      const idx = 2 - j; // 2 = gold
-      const y = top + j * (rh + 8);
-      const lit = tier >= idx, active = tier === idx;
-      k.box(bx, y, bwid, rh, 8, {
-        fill: active ? pal.signal : pal.fg,
-        alpha: active ? 0.14 : lit ? 0.05 : 0,
-      });
-      k.box(bx, y, bwid, rh, 8, { stroke: active ? pal.signal : lit ? pal.fg : pal.muted, alpha: lit ? 0.9 : 0.35, lw: active ? 1.5 : 1 });
-      k.text(tr[0], bx + 12, y + rh / 2 + (narrow ? 4 : -2), { sans: true, weight: 500, size: k.fs * 1.25, color: lit ? pal.fg : pal.muted });
-      if (!narrow) k.text(tr[1], bx + 12, y + rh / 2 + k.fs * 1.3, { size: k.fs * 0.8 });
-      k.text(tr[2], bx + bwid - 12, y + rh / 2 + k.fs * 0.5, { align: "right", sans: true, weight: 500, size: k.fs * 1.5, color: active ? pal.signal : lit ? pal.fg : pal.muted });
-    });
-
-    // --- column C: available reserve ---
-    const cx = w * 0.72, cw = w - p - cx;
-    k.text("AVAILABLE RESERVE", cx, top - k.fs * 1.3);
-    k.box(cx, top, cw, colH, 6, { stroke: pal.muted, alpha: 0.5 });
-    const scale = colH / 1600;
-    const availH = avail * scale, debtH = Math.min(debt, limit) * scale;
-    k.box(cx + 3, bot - availH, cw - 6, Math.max(0, availH - 3), 4, { fill: pal.signal, alpha: 0.9 });
-    if (debtH > 1) {
-      // hatched debt slice sitting on top of what's still available
-      const dy = bot - availH - debtH;
-      k.box(cx + 3, dy, cw - 6, debtH, 2, { stroke: pal.fg, alpha: 0.6, dash: [3, 3] });
-      ctx.save(); ctx.beginPath(); ctx.rect(cx + 3, dy, cw - 6, debtH); ctx.clip();
-      for (let s = -debtH; s < cw; s += 7) k.line(cx + s, dy + debtH, cx + s + debtH, dy, pal.fg, 1, null, 0.25);
-      ctx.restore();
-    }
-    if (limit > 0) {
-      const ly = bot - limit * scale;
-      k.line(cx - 6, ly, cx + cw + 6, ly, pal.fg, 1, [4, 3], 0.7);
-    }
-    k.text(naira(avail), cx, bot + k.fs * 2.4, { sans: true, size: k.fs * 1.9, weight: 500, color: pal.signal });
-    k.text(debt > 1 ? `DEBT ${naira(debt)}` : `LIMIT ${naira(limit)}`, cx, bot + k.fs * 4);
-
-    // --- story beats ---
-    if (t > 5.9 && t < 7.5) k.text("⚡ EMERGENCY: 1GB ON CREDIT", w / 2, h * 0.15, { align: "center", color: pal.signal, alpha: seg(t, 5.9, 6.2) * (1 - seg(t, 7.2, 7.5)) });
-    if (t > 7.6 && t < 10.4) k.text("↺ NEXT TOP-UP REPAYS THE DEBT FIRST", w / 2, h * 0.15, { align: "center", color: pal.live, alpha: seg(t, 7.6, 7.9) * (1 - seg(t, 10.1, 10.4)) });
-
-    // --- the rule, with live numbers ---
-    const fy = h * 0.87;
-    const pctS = `${Math.round(pct * 100)}%`;
-    const rule = narrow
-      ? `max(0, ${pctS} × ${Math.round(profit)} − ${Math.round(debt)}) = ${Math.round(avail)}`
-      : `available = max(0, ${pctS} × ${naira(profit)} − ${naira(debt)}) = ${naira(avail)}`;
-    k.text(rule, p, fy, { color: pal.fg, size: k.fs * 1.05 });
-    k.text("AMOUNTS IN KOBO INTEGERS · FLOATS NEVER TOUCH MONEY", p, fy + k.fs * 1.9, { size: k.fs * 0.85 });
-  },
-};
-
-/* =========================================================================
-   FIG 03 · EFITMI
+   EFITMI
    pose landmarks + ISO card reference → calibrated body measurements
    ========================================================================= */
 const efitmi = {
@@ -463,7 +363,7 @@ const efitmi = {
 };
 
 /* =========================================================================
-   FIG 04 · VOICE PARTY ARCADE
+   VOICE PARTY ARCADE
    voice → pitch + transcript → points → power-ups on the roadmap
    ========================================================================= */
 const voice = {
@@ -556,7 +456,7 @@ const voice = {
 };
 
 /* =========================================================================
-   FIG 05 · N-RECLAIM
+   N-RECLAIM
    scan treasury → verify (balance = 0 ∧ authority = bot) → close → rent home
    ========================================================================= */
 const RENT = 0.00203928;
@@ -668,8 +568,9 @@ const reclaim = {
 };
 
 /* =========================================================================
-   FIG 06 · LEZERV
-   client pays → escrow holds → job done → artisan paid, commission split
+   LEZERV
+   request → site visit → firm quote accepted (amount + commission snapshotted)
+   → job done → artisan paid, commission split. Escrow holding is the next step.
    ========================================================================= */
 const escrow = {
   loop: 10,
@@ -681,7 +582,7 @@ const escrow = {
     const R = clamp(Math.min(w * 0.06, h * 0.085), 14, 44);
 
     // status rail
-    const steps = [["BOOKED", 0.3], ["FUNDED", 1.9], ["WORKING", 2.6], ["DONE", 4.9], ["PAID", 5.6]];
+    const steps = [["REQUEST", 0.3], ["SITE VISIT", 1.9], ["FIRM QUOTE", 2.6], ["DONE", 4.9], ["PAID", 5.6]];
     const sx0 = p, sx1 = w - p, sy = h * 0.19;
     k.line(sx0, sy, sx1, sy, pal.muted, 1, null, 0.35);
     steps.forEach(([name, at], i) => {
@@ -721,7 +622,7 @@ const escrow = {
     k.text("%", PL[0], PL[1] + R * 0.25, { align: "center", sans: true, size: R * 0.7, weight: 500, color: pal.fg });
 
     const lab = (str, [x, y], r = R) => k.text(str, x, y + r + k.fs * 1.9, { align: "center" });
-    lab("CLIENT", C); lab("ESCROW", E); lab("ARTISAN", A); lab("PLATFORM", PL, R * 0.7);
+    lab("CLIENT", C); lab("LEZERV", E); lab("ARTISAN", A); lab("PLATFORM", PL, R * 0.7);
 
     // artisan progress ring while the job is happening
     if (t > 2.6) {
@@ -736,7 +637,7 @@ const escrow = {
       return [lerp(from[0], to[0], q), lerp(from[1], to[1], q)];
     };
     if (t > 0.4 && t < 1.9) { const [x, y] = move(C, E, 0.4, 1.9); k.pill("₦25,000", x, y - R - 16); }
-    if (t >= 1.9 && t < 5.6) k.pill("₦25,000 HELD", E[0], E[1] - R - 16, { fill: pal.fg, color: pal.bg });
+    if (t >= 1.9 && t < 5.6) k.pill("₦25,000 AGREED", E[0], E[1] - R - 16, { fill: pal.fg, color: pal.bg });
     if (t >= 5.6 && t < 7.2) {
       const [ax, ay] = move(E, A, 5.6, 7.1);
       k.pill("₦22,500", ax, ay - R - 16);
@@ -759,7 +660,7 @@ const escrow = {
   },
 };
 
-export const SCENES = { ncliper, datakeep, efitmi, voice, reclaim, escrow };
+export const SCENES = { ncliper, efitmi, voice, reclaim, escrow };
 
 /* =========================================================================
    RUNNER: sizes each canvas, plays it only while on screen, and fades
@@ -775,23 +676,22 @@ function readPalette() {
   };
 }
 
+/** Mount every figure canvas on the page ([data-visual]). */
 export function initVisuals({ reduced = false } = {}) {
-  let pal = readPalette();
-  const runners = [...document.querySelectorAll("canvas[data-visual]")]
-    .map((c) => createRunner(c, SCENES[c.dataset.visual], () => pal, reduced))
-    .filter(Boolean);
-  return {
-    refresh() { pal = readPalette(); runners.forEach((r) => r.redraw()); },
-  };
+  const runners = [...document.querySelectorAll("canvas[data-visual]")].map((c) => mountVisual(c, c.dataset.visual, { reduced }));
+  return { refresh() {} , runners };
 }
 
-function createRunner(canvas, scene, getPal, reduced) {
-  if (!scene) return null;
+/** Start the diagram `key` on `canvas`. Returns { destroy } to stop it. */
+export function mountVisual(canvas, key, { reduced = false } = {}) {
+  const scene = SCENES[key];
+  if (!scene) return { destroy() {} };
   const ctx = canvas.getContext("2d");
+  const pal = readPalette();
   let w = 0, h = 0, raf = 0, running = false, clock = 0, last = 0;
 
   function size() {
-    // clientWidth ignores CSS transforms (the reveal animation scales the canvas)
+    // clientWidth ignores CSS transforms, so animations can't skew the measurement
     w = canvas.clientWidth; h = canvas.clientHeight;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.max(1, Math.round(w * dpr));
@@ -800,7 +700,6 @@ function createRunner(canvas, scene, getPal, reduced) {
   }
   function render(t) {
     if (!w || !h) return;
-    const pal = getPal();
     ctx.clearRect(0, 0, w, h);
     scene.draw(ctx, w, h, t, pal, makeKit(ctx, w, h, pal));
     if (!reduced) {
@@ -815,12 +714,12 @@ function createRunner(canvas, scene, getPal, reduced) {
     render(clock % scene.loop);
     if (running) raf = requestAnimationFrame(frame);
   }
-  function play() { if (running || reduced) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); }
-  function pause() { running = false; cancelAnimationFrame(raf); }
+  const play = () => { if (running || reduced) return; running = true; last = performance.now(); raf = requestAnimationFrame(frame); };
+  const pause = () => { running = false; cancelAnimationFrame(raf); };
 
-  new ResizeObserver(() => { size(); render(now()); }).observe(canvas);
-  new IntersectionObserver(([e]) => (e.isIntersecting ? play() : pause()), { rootMargin: "60px" }).observe(canvas);
-  size();
-  render(now());
-  return { redraw: () => render(now()) };
+  const ro = new ResizeObserver(() => { size(); render(now()); });
+  const io = new IntersectionObserver(([e]) => (e.isIntersecting ? play() : pause()));
+  ro.observe(canvas); io.observe(canvas);
+  size(); render(now());
+  return { destroy() { pause(); ro.disconnect(); io.disconnect(); } };
 }

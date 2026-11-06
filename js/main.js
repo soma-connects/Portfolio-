@@ -14,6 +14,7 @@ import { initHero } from "./hero.js";
 import { initVisuals } from "./visuals.js";
 import { initPortrait } from "./portrait.js";
 import { initMotion } from "./motion.js";
+import { initSheet, initFigures } from "./sheet.js";
 
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -86,6 +87,9 @@ async function boot() {
     reduced,
     onTheme: () => { hero?.refreshColors(); visuals.refresh(); portrait?.refresh(); },
   });
+
+  initFigures({ reduced });
+  initSheet({ reduced });
 
   await loaderDone;
   document.body.classList.remove("is-loading");
